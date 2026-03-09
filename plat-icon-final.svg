@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 90" width="84" height="90">
+  <!--
+    Plat icon — 7 cols × 4 rows choropleth grid
+    Cell size: 10 w × 18 h, no col gap, no rx
+    4px white gap between band 1 and band 2
+    Grid origin: x=7, y=7
+  -->
+
+  <!-- Band 1, Row 0 — top, fading edges -->
+  <rect x="7"  y="7"  width="10" height="18" fill="#d5d9de"/>
+  <rect x="17" y="7"  width="10" height="18" fill="#0E9183" opacity="0.45"/>
+  <rect x="27" y="7"  width="10" height="18" fill="#0E9183" opacity="0.85"/>
+  <rect x="37" y="7"  width="10" height="18" fill="#D4840C" opacity="0.55"/>
+  <rect x="47" y="7"  width="10" height="18" fill="#1A7BBD" opacity="0.55"/>
+  <rect x="57" y="7"  width="10" height="18" fill="#C2546A" opacity="0.38"/>
+  <rect x="67" y="7"  width="10" height="18" fill="#d5d9de"/>
+
+  <!-- Band 1, Row 1 — mid-upper density -->
+  <rect x="7"  y="25" width="10" height="18" fill="#0E9183" opacity="0.24"/>
+  <rect x="17" y="25" width="10" height="18" fill="#D4840C" opacity="0.52"/>
+  <rect x="27" y="25" width="10" height="18" fill="#D4840C"/>
+  <rect x="37" y="25" width="10" height="18" fill="#D4840C"/>
+  <rect x="47" y="25" width="10" height="18" fill="#1A7BBD"/>
+  <rect x="57" y="25" width="10" height="18" fill="#C2546A" opacity="0.65"/>
+  <rect x="67" y="25" width="10" height="18" fill="#1B3C59"/>
+
+  <!-- 4px white gap at y=43 -->
+
+  <!-- Band 2, Row 2 — mid-lower core -->
+  <rect x="7"  y="47" width="10" height="18" fill="#7C5CBF" opacity="0.42"/>
+  <rect x="17" y="47" width="10" height="18" fill="#7C5CBF"/>
+  <rect x="27" y="47" width="10" height="18" fill="#C2546A" opacity="0.65"/>
+  <rect x="37" y="47" width="10" height="18" fill="#C2546A"/>
+  <rect x="47" y="47" width="10" height="18" fill="#0E9183" opacity="0.72"/>
+  <rect x="57" y="47" width="10" height="18" fill="#1A7BBD" opacity="0.50"/>
+  <rect x="67" y="47" width="10" height="18" fill="#1B3C59" opacity="0.58"/>
+
+  <!-- Band 2, Row 3 — bottom, fading edges -->
+  <rect x="7"  y="65" width="10" height="18" fill="#d5d9de"/>
+  <rect x="17" y="65" width="10" height="18" fill="#7C5CBF" opacity="0.28"/>
+  <rect x="27" y="65" width="10" height="18" fill="#D4840C" opacity="0.38"/>
+  <rect x="37" y="65" width="10" height="18" fill="#0E9183" opacity="0.32"/>
+  <rect x="47" y="65" width="10" height="18" fill="#C2546A" opacity="0.42"/>
+  <rect x="57" y="65" width="10" height="18" fill="#1A7BBD" opacity="0.28"/>
+  <rect x="67" y="65" width="10" height="18" fill="#d5d9de"/>
+
+</svg>

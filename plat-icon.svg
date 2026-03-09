@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+
+  <!--
+    Plat — Icon Mark (standalone / favicon-ready)
+    5 × 4 choropleth-style grid centred in 80 × 80 canvas.
+
+    Cell: 14 × 14 px, gap: 2 px
+    Grid: w = 5×14+4×2 = 78   h = 4×14+3×2 = 62
+    Origin: x = (80-78)/2 = 1,  y = (80-62)/2 = 9
+  -->
+
+  <!-- Row 0 -->
+  <rect x="1"  y="9"  width="14" height="14" rx="3" fill="#d5d9de"/>
+  <rect x="17" y="9"  width="14" height="14" rx="3" fill="#0E9183" opacity="0.42"/>
+  <rect x="33" y="9"  width="14" height="14" rx="3" fill="#0E9183" opacity="0.82"/>
+  <rect x="49" y="9"  width="14" height="14" rx="3" fill="#1A7BBD" opacity="0.52"/>
+  <rect x="65" y="9"  width="14" height="14" rx="3" fill="#d5d9de"/>
+
+  <!-- Row 1 -->
+  <rect x="1"  y="25" width="14" height="14" rx="3" fill="#0E9183" opacity="0.24"/>
+  <rect x="17" y="25" width="14" height="14" rx="3" fill="#D4840C" opacity="0.52"/>
+  <rect x="33" y="25" width="14" height="14" rx="3" fill="#D4840C"/>
+  <rect x="49" y="25" width="14" height="14" rx="3" fill="#1A7BBD"/>
+  <rect x="65" y="25" width="14" height="14" rx="3" fill="#1B3C59"/>
+
+  <!-- Row 2 -->
+  <rect x="1"  y="41" width="14" height="14" rx="3" fill="#7C5CBF" opacity="0.42"/>
+  <rect x="17" y="41" width="14" height="14" rx="3" fill="#7C5CBF"/>
+  <rect x="33" y="41" width="14" height="14" rx="3" fill="#C2546A" opacity="0.65"/>
+  <rect x="49" y="41" width="14" height="14" rx="3" fill="#C2546A"/>
+  <rect x="65" y="41" width="14" height="14" rx="3" fill="#1B3C59" opacity="0.58"/>
+
+  <!-- Row 3 -->
+  <rect x="1"  y="57" width="14" height="14" rx="3" fill="#d5d9de"/>
+  <rect x="17" y="57" width="14" height="14" rx="3" fill="#7C5CBF" opacity="0.28"/>
+  <rect x="33" y="57" width="14" height="14" rx="3" fill="#D4840C" opacity="0.38"/>
+  <rect x="49" y="57" width="14" height="14" rx="3" fill="#0E9183" opacity="0.32"/>
+  <rect x="65" y="57" width="14" height="14" rx="3" fill="#d5d9de"/>
+
+</svg>

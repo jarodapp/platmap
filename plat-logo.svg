@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 90" width="420" height="90">
+
+  <!--
+    Plat — Full Horizontal Logo
+    American Housing, Mapped and Measured
+
+    Brand palette
+      Navy   #1B3C59   Primary text / deep squares
+      Blue   #2980B9   Tagline / accent
+    Data palette (colorblind-safe)
+      Teal   #0E9183   (Asian)
+      Amber  #D4840C   (Black)
+      Steel  #1A7BBD   (Hispanic)
+      Violet #7C5CBF   (White)
+      Rose   #C2546A   (Multi)
+  -->
+
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- ── Choropleth grid icon: 7 cols × 4 rows ─────────────────────────
+       Each cell: 10 w × 18 h, no col gap, no rx
+       Rows 0+1 abut (no gap), 4px white gap in middle, rows 2+3 abut
+       Grid origin: x=14, y=7
+       Grid total:  w=7×10=70   h=18+18+4+18+18=76
+       Centred in 90 px tall canvas: top=(90-76)/2=7
+  ──────────────────────────────────────────────────────────────────── -->
+
+  <!-- Band 1, Row 0 — top, fading edges -->
+  <rect x="14" y="7"  width="10" height="18" fill="#d5d9de"/>
+  <rect x="24" y="7"  width="10" height="18" fill="#0E9183" opacity="0.45"/>
+  <rect x="34" y="7"  width="10" height="18" fill="#0E9183" opacity="0.85"/>
+  <rect x="44" y="7"  width="10" height="18" fill="#D4840C" opacity="0.55"/>
+  <rect x="54" y="7"  width="10" height="18" fill="#1A7BBD" opacity="0.55"/>
+  <rect x="64" y="7"  width="10" height="18" fill="#C2546A" opacity="0.38"/>
+  <rect x="74" y="7"  width="10" height="18" fill="#d5d9de"/>
+
+  <!-- Band 1, Row 1 — mid-upper density -->
+  <rect x="14" y="25" width="10" height="18" fill="#0E9183" opacity="0.24"/>
+  <rect x="24" y="25" width="10" height="18" fill="#D4840C" opacity="0.52"/>
+  <rect x="34" y="25" width="10" height="18" fill="#D4840C"/>
+  <rect x="44" y="25" width="10" height="18" fill="#D4840C"/>
+  <rect x="54" y="25" width="10" height="18" fill="#1A7BBD"/>
+  <rect x="64" y="25" width="10" height="18" fill="#C2546A" opacity="0.65"/>
+  <rect x="74" y="25" width="10" height="18" fill="#1B3C59"/>
+
+  <!-- 4px white gap at y=43 -->
+
+  <!-- Band 2, Row 2 — mid-lower core -->
+  <rect x="14" y="47" width="10" height="18" fill="#7C5CBF" opacity="0.42"/>
+  <rect x="24" y="47" width="10" height="18" fill="#7C5CBF"/>
+  <rect x="34" y="47" width="10" height="18" fill="#C2546A" opacity="0.65"/>
+  <rect x="44" y="47" width="10" height="18" fill="#C2546A"/>
+  <rect x="54" y="47" width="10" height="18" fill="#0E9183" opacity="0.72"/>
+  <rect x="64" y="47" width="10" height="18" fill="#1A7BBD" opacity="0.50"/>
+  <rect x="74" y="47" width="10" height="18" fill="#1B3C59" opacity="0.58"/>
+
+  <!-- Band 2, Row 3 — bottom, fading edges -->
+  <rect x="14" y="65" width="10" height="18" fill="#d5d9de"/>
+  <rect x="24" y="65" width="10" height="18" fill="#7C5CBF" opacity="0.28"/>
+  <rect x="34" y="65" width="10" height="18" fill="#D4840C" opacity="0.38"/>
+  <rect x="44" y="65" width="10" height="18" fill="#0E9183" opacity="0.32"/>
+  <rect x="54" y="65" width="10" height="18" fill="#C2546A" opacity="0.42"/>
+  <rect x="64" y="65" width="10" height="18" fill="#1A7BBD" opacity="0.28"/>
+  <rect x="74" y="65" width="10" height="18" fill="#d5d9de"/>
+
+  <!-- ── Thin divider ───────────────────────────────────────────────── -->
+  <line x1="97" y1="10" x2="97" y2="80"
+        stroke="#1B3C59" stroke-width="1" stroke-linecap="round" opacity="0.14"/>
+
+  <!-- ── Wordmark ────────────────────────────────────────────────────── -->
+  <text
+    x="110" y="57"
+    font-family="'Montserrat', Arial, sans-serif"
+    font-size="46"
+    font-weight="700"
+    fill="#1B3C59"
+    letter-spacing="-0.5">Plat</text>
+
+  <!-- ── Tagline ─────────────────────────────────────────────────────── -->
+  <text
+    x="112" y="73"
+    font-family="'Montserrat', Arial, sans-serif"
+    font-size="9"
+    font-weight="400"
+    fill="#2980B9"
+    letter-spacing="1.1">AMERICAN HOUSING, MAPPED AND MEASURED</text>
+
+</svg>

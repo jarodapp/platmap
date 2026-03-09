@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Data & Download · Plat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="plat.css">
+  <style>
+    .prose { max-width: 680px; }
+    .prose p { color: var(--text-secondary, #4a5568); line-height: 1.75; margin: 0 0 1.1em; font-size: 1.0rem; }
+    .prose h3 { color: var(--navy); font-size: 1.1rem; font-weight: 700; margin: 1.8em 0 0.4em; }
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
+    .data-table th { text-align: left; padding: 10px 14px; background: var(--navy); color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .data-table th:first-child { border-radius: 6px 0 0 0; }
+    .data-table th:last-child { border-radius: 0 6px 0 0; }
+    .data-table td { padding: 10px 14px; border-bottom: 1px solid #e9eef4; color: #4a5a6a; vertical-align: top; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f7fafc; }
+    .data-table td:first-child { font-family: 'Courier New', monospace; font-size: 0.82rem; color: #1B3C59; font-weight: 600; white-space: nowrap; }
+    .file-list { list-style: none; margin: 20px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .file-list li { display: flex; align-items: center; justify-content: space-between; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; gap: 16px; }
+    .file-info { flex: 1; }
+    .file-name { font-family: 'Courier New', monospace; font-size: 0.85rem; font-weight: 600; color: #1B3C59; }
+    .file-desc { font-size: 0.82rem; color: #6b7a8d; margin-top: 2px; }
+    .file-size { font-size: 0.8rem; color: #9ab; white-space: nowrap; }
+    .file-badge { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+    .badge-json { background: #e6f4f1; color: #0E9183; }
+    .badge-csv { background: #e8f4e8; color: #2e7d32; }
+    .badge-pmtiles { background: #e8edf5; color: #1B3C59; }
+    .source-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 24px; margin-top: 20px; }
+    .source-card h4 { margin: 0 0 8px; color: var(--navy); font-size: 1rem; font-weight: 700; }
+    .source-card p { margin: 0 0 12px; color: #5a6a7a; font-size: 0.9rem; line-height: 1.65; }
+    .source-card a { color: var(--teal); font-weight: 600; text-decoration: none; font-size: 0.9rem; }
+    .source-card a:hover { text-decoration: underline; }
+    .schema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+    @media (max-width: 640px) { .schema-grid { grid-template-columns: 1fr; } }
+    .coming-note { display: flex; align-items: center; gap: 10px; background: #fffbea; border: 1px solid #f6e05e; border-radius: 8px; padding: 12px 16px; font-size: 0.88rem; color: #744210; margin-top: 16px; }
+    .coming-note svg { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+  <nav id="plat-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img class="nav-logo-icon" src="plat-icon-final.svg" alt="Plat icon">
+        <span class="nav-wordmark">Plat</span>
+        <div class="nav-divider"></div>
+        <span class="nav-tagline">American Housing, Mapped and Measured</span>
+      </a>
+      <div class="nav-links">
+        <a href="explore/index.html" class="nav-cta">Explore Maps</a>
+        <a href="stories.html" class="nav-stories">Stories</a>
+        <a href="about.html">About</a>
+        <a href="data.html" class="active">Data</a>
+        <a href="methodology.html">Methodology</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-main">
+
+    <section class="hero" style="padding-top: 56px; padding-bottom: 40px">
+      <div class="hero-eyebrow">Raw Data</div>
+      <h1>Data &amp; <em>Download</em></h1>
+      <p>All aggregated data files used by Plat's maps are available for free download. The full pipeline is open source.</p>
+    </section>
+
+    <div class="section">
+      <div class="section-label">Source Data</div>
+      <h2>Where the Data Comes From</h2>
+      <p class="section-sub">All HMDA data is sourced directly from the Consumer Financial Protection Bureau's public HMDA Data Browser API. No modeling, no imputation — this is directly reported lender data.</p>
+
+      <div class="source-card">
+        <h4>CFPB HMDA Data Browser</h4>
+        <p>The Consumer Financial Protection Bureau collects and publishes loan-level HMDA records annually. The HMDA Data Browser provides a REST API for downloading filtered record sets by state, year, and institution. Plat downloads all home-purchase originations for all 50 states and the District of Columbia.</p>
+        <a href="https://ffiec.cfpb.gov/data-browser/" target="_blank" rel="noopener">ffiec.cfpb.gov/data-browser →</a>
+      </div>
+
+      <div class="source-card" style="margin-top: 12px">
+        <h4>Census TIGER/Line Shapefiles</h4>
+        <p>Geographic boundaries for census tracts, counties, and states come from the U.S. Census Bureau's TIGER/Line program. Plat uses three boundary vintages (2000, 2010, 2020) aligned to the decennial census tract definitions in use for each year of HMDA data.</p>
+        <a href="https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html" target="_blank" rel="noopener">Census TIGER/Line Files →</a>
+      </div>
+    </div>
+
+    <div class="section" style="padding-top: 0">
+      <div class="section-label">Aggregated Files</div>
+      <h2>Plat Data Files</h2>
+      <p class="section-sub">Plat pre-aggregates raw HMDA records into compact JSON files — one file per geographic level per year. These are the same files the interactive maps load. You can use them directly in your own analysis.</p>
+
+      <div class="coming-note">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#d97706" stroke-width="1.5"/><path d="M8 5v3.5M8 10.5v.5" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Bulk download links are coming soon. In the meantime, you can access all JSON files directly from the <code style="font-size:0.82em;background:#fef3c7;padding:1px 5px;border-radius:3px;">data/</code> directory of the Plat repository.
+      </div>
+
+      <ul class="file-list" style="margin-top: 24px">
+        <li>
+          <div class="file-info">
+            <div class="file-name">states_{year}.json</div>
+            <div class="file-desc">State-level aggregates for a single year. 51 records (50 states + D.C.), &lt;10 KB each.</div>
+          </div>
+          <span class="file-size">18 files · ~150 KB total</span>
+          <span class="file-badge badge-json">JSON</span>
+        </li>
+        <li>
+          <div class="file-info">
+            <div class="file-name">counties_{year}.json</div>
+            <div class="file-desc">County-level aggregates for a single year. ~3,200 county FIPS keys per file.</div>
+          </div>
+          <span class="file-size">18 files · ~25 MB total</span>
+          <span class="file-badge badge-json">JSON</span>
+        </li>
+        <li>
+          <div class="file-info">
+            <div class="file-name">tracts_{epoch}_{year}.json</div>
+            <div class="file-desc">Census tract aggregates for a single year. ~84,000 GEOID keys. Loaded on demand when map zooms to tract level.</div>
+          </div>
+          <span class="file-size">18 files · ~5 MB each</span>
+          <span class="file-badge badge-json">JSON</span>
+        </li>
+        <li>
+          <div class="file-info">
+            <div class="file-name">homebuyers.json</div>
+            <div class="file-desc">National totals by year and racial group — used for the loan-volume bar chart.</div>
+          </div>
+          <span class="file-size">&lt;10 KB</span>
+          <span class="file-badge badge-json">JSON</span>
+        </li>
+        <li>
+          <div class="file-info">
+            <div class="file-name">income.json</div>
+            <div class="file-desc">National median income by year and racial group — used for the income scatter chart.</div>
+          </div>
+          <span class="file-size">&lt;10 KB</span>
+          <span class="file-badge badge-json">JSON</span>
+        </li>
+        <li>
+          <div class="file-info">
+            <div class="file-name">states.pmtiles / counties.pmtiles</div>
+            <div class="file-desc">Vector tile archives for state and county boundaries. Streamed via HTTP range requests — no tile server required.</div>
+          </div>
+          <span class="file-size">~5 MB combined</span>
+          <span class="file-badge badge-pmtiles">PMTiles</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="section" style="padding-top: 0">
+      <div class="section-label">Schema</div>
+      <h2>Data Field Reference</h2>
+      <p class="section-sub">Each record in a state, county, or tract JSON file contains the following fields. All income values are in nominal U.S. dollars (not inflation-adjusted).</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>r</td><td>string</td><td>Dominant racial/ethnic group (Asian, Black, Hispanic, White, Multi, or Diverse)</td></tr>
+          <tr><td>tx</td><td>integer</td><td>Total home-purchase loan originations for this geography and year</td></tr>
+          <tr><td>inc</td><td>integer</td><td>Median applicant income across all originations (dollars)</td></tr>
+          <tr><td>pw</td><td>float</td><td>Share of originations where applicant race is White (0–1)</td></tr>
+          <tr><td>pb</td><td>float</td><td>Share of originations — Black or African American</td></tr>
+          <tr><td>pa</td><td>float</td><td>Share of originations — Asian</td></tr>
+          <tr><td>ph</td><td>float</td><td>Share of originations — Hispanic or Latino</td></tr>
+          <tr><td>pm</td><td>float</td><td>Share of originations — Multiracial or other</td></tr>
+          <tr><td>iw</td><td>integer</td><td>Median income — White applicants (dollars, null if &lt;5 records)</td></tr>
+          <tr><td>ib</td><td>integer</td><td>Median income — Black applicants</td></tr>
+          <tr><td>ia</td><td>integer</td><td>Median income — Asian applicants</td></tr>
+          <tr><td>ih</td><td>integer</td><td>Median income — Hispanic applicants</td></tr>
+          <tr><td>im</td><td>integer</td><td>Median income — Multiracial applicants</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section" style="padding-top: 0">
+      <div class="section-label">Terms</div>
+      <h2>Data Use &amp; Attribution</h2>
+      <div class="prose">
+        <p>Plat's aggregated data files are made available under the <strong>Creative Commons Attribution 4.0 International (CC BY 4.0)</strong> license. You are free to use, share, and adapt them for any purpose, including commercial use, as long as you provide attribution.</p>
+        <p>The underlying HMDA raw data is a U.S. federal government work and is in the public domain. No license restrictions apply to the raw CFPB data itself.</p>
+        <h3>Attribution</h3>
+        <p>When using Plat data in published work, please include: <em>"Data aggregated by Plat from CFPB HMDA public records."</em> See the <a href="about.html">About page</a> for a full citation format.</p>
+        <h3>Limitations</h3>
+        <p>HMDA data reflects applications made to covered lenders — not all mortgage activity, and not all housing transactions. See the <a href="methodology.html">Methodology page</a> for a full description of known data limitations.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer id="plat-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-wordmark">Plat</div>
+        <p>American Housing, Mapped and Measured. Explore mortgage lending patterns across every census tract in the nation.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a href="stories.html">Stories</a>
+        <a href="about.html">About</a>
+        <a href="data.html">Data &amp; Download</a>
+        <a href="methodology.html">Methodology</a>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="explore/index.html">All Maps</a>
+        <a href="explore/national.html">Homebuyers by Race</a>
+        <a href="explore/income.html">Homebuyers by Income</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>Data sourced from CFPB Home Mortgage Disclosure Act public records</span>
+      <span>Built with MapLibre GL · D3.js · PMTiles</span>
+    </div>
+  </footer>
+
+</body>
+</html>

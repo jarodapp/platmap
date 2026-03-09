@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 80" width="440" height="80">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');</style>
+    <!-- Clip keeps shapes inside the icon boundary -->
+    <clipPath id="ic">
+      <rect x="8" y="7" width="90" height="66" rx="3"/>
+    </clipPath>
+  </defs>
+
+  <!--
+    ── Icon mark ───────────────────────────────────────────────────
+    12 tract-like shapes tiling a 90×66 canvas (origin offset 8,7).
+    Shapes sit edge-to-edge. White "street" paths drawn on top
+    carry subtle bezier curves for the organic census-tract feel.
+
+    Column split x:  32  50  62  80   (widths: 24 18 12 18 18)
+    Row split y:     29  52          (heights: 22 23 21)
+
+    Colour palette — all 5 brand data colours used 2–3× ea.:
+      Teal   #0E9183  ×3
+      Amber  #D4840C  ×2
+      Steel  #1A7BBD  ×2
+      Violet #7C5CBF  ×2
+      Rose   #C2546A  ×2
+      Navy   #1B3C59  ×1
+    ────────────────────────────────────────────────────────────────
+  -->
+
+  <g clip-path="url(#ic)">
+
+    <!-- ── Row 1 ── -->
+    <rect x="8"  y="7"  width="24" height="22" fill="#0E9183"/>
+    <rect x="32" y="7"  width="18" height="22" fill="#D4840C"/>
+    <rect x="50" y="7"  width="12" height="22" fill="#1B3C59" opacity="0.60"/>
+    <rect x="62" y="7"  width="18" height="22" fill="#7C5CBF"/>
+    <rect x="80" y="7"  width="18" height="22" fill="#1A7BBD" opacity="0.72"/>
+
+    <!-- ── Row 2 ── -->
+    <rect x="8"  y="29" width="24" height="23" fill="#C2546A"/>
+    <rect x="32" y="29" width="30" height="23" fill="#7C5CBF" opacity="0.70"/>
+    <rect x="62" y="29" width="18" height="23" fill="#0E9183" opacity="0.60"/>
+    <rect x="80" y="29" width="18" height="23" fill="#D4840C" opacity="0.68"/>
+
+    <!-- ── Row 3 ── -->
+    <rect x="8"  y="52" width="28" height="21" fill="#1A7BBD" opacity="0.55"/>
+    <rect x="36" y="52" width="26" height="21" fill="#C2546A" opacity="0.72"/>
+    <rect x="62" y="52" width="18" height="21" fill="#0E9183" opacity="0.42"/>
+    <rect x="80" y="52" width="18" height="21" fill="#0E9183" opacity="0.75"/>
+
+    <!-- ══ White street lines (organic curves make shapes feel like real tracts) ══ -->
+    <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5">
+
+      <!-- H1 — between rows 1 & 2: gentle upward arc -->
+      <path d="M 6,29 C 35,26 65,26 100,29"/>
+
+      <!-- H2 — between rows 2 & 3: gentle downward arc -->
+      <path d="M 6,52 C 30,54 70,54 100,52"/>
+
+      <!-- Row-1 verticals -->
+      <line x1="32" y1="5"  x2="32" y2="31"/>
+      <line x1="50" y1="5"  x2="50" y2="31"/>
+      <path d="M 62,5 C 61,17 63,23 62,31"/>   <!-- slight S through row 1 -->
+      <line x1="80" y1="5"  x2="80" y2="31"/>
+
+      <!-- Row-2 verticals -->
+      <path d="M 32,27 C 33,39 31,53 32,54"/>  <!-- gentle curve mid-col -->
+      <path d="M 62,27 C 61,39 63,51 62,54"/>  <!-- echoes row-1 curve -->
+      <line x1="80" y1="27" x2="80" y2="54"/>
+
+      <!-- Row-3 verticals -->
+      <path d="M 36,50 L 36,75"/>
+      <path d="M 62,50 C 61,58 63,66 62,75"/>
+      <line x1="80" y1="50" x2="80" y2="75"/>
+
+    </g>
+  </g>
+
+  <!-- ── Divider ──────────────────────────────────────────────── -->
+  <line x1="107" y1="12" x2="107" y2="68"
+        stroke="#1B3C59" stroke-width="1" opacity="0.13" stroke-linecap="round"/>
+
+  <!-- ── Wordmark ─────────────────────────────────────────────── -->
+  <text
+    x="117" y="54"
+    font-family="'Montserrat', Arial, Helvetica, sans-serif"
+    font-size="44"
+    font-weight="700"
+    fill="#1B3C59"
+    letter-spacing="-1">Plat</text>
+
+  <!-- ── Tagline ──────────────────────────────────────────────── -->
+  <text
+    x="119" y="69"
+    font-family="'Montserrat', Arial, Helvetica, sans-serif"
+    font-size="7.5"
+    font-weight="600"
+    fill="#2980B9"
+    letter-spacing="1.1">AMERICAN HOUSING, MAPPED AND MEASURED</text>
+
+</svg>

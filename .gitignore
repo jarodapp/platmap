@@ -1,0 +1,32 @@
+# ─── Pipeline source data (not deployed) ─────────────────────────────────────
+raw_data/
+shapefiles/
+downloads/
+processed/
+pipeline/__pycache__/
+pipeline/*.pyc
+__pycache__/
+
+# ─── PMTiles (deployed to Cloudflare R2, not Pages) ──────────────────────────
+tiles/
+
+# ─── Wrangler local cache (contains large binary blobs) ─────────────────────
+.wrangler/
+
+# ─── Local dev server (not needed in production) ─────────────────────────────
+serve.py
+
+# ─── Scratch / preview files ─────────────────────────────────────────────────
+save_img.html
+plat-font-options.html
+plat-logo-v2.html
+plat-logo-v3.html
+logo-preview.html
+
+# ─── OS / editor files ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

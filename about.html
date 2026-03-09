@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>About · Plat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="plat.css">
+  <style>
+    .prose { max-width: 680px; }
+    .prose p { color: var(--text-secondary, #4a5568); line-height: 1.75; margin: 0 0 1.1em; font-size: 1.0rem; }
+    .prose h3 { color: var(--navy); font-size: 1.1rem; font-weight: 700; margin: 1.8em 0 0.4em; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; }
+    @media (max-width: 640px) { .about-grid { grid-template-columns: 1fr; } }
+    .about-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 24px; }
+    .about-card h4 { margin: 0 0 8px; color: var(--navy); font-size: 0.95rem; font-weight: 700; }
+    .about-card p { margin: 0; color: #5a6a7a; font-size: 0.9rem; line-height: 1.65; }
+    .cite-block { background: #f0f7f6; border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 16px 20px; margin-top: 16px; font-family: 'Courier New', monospace; font-size: 0.85rem; color: #2d4a5a; line-height: 1.6; }
+    .people-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
+    .person-chip { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 16px; }
+    .person-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+    .person-info { }
+    .person-name { font-size: 0.9rem; font-weight: 600; color: var(--navy); }
+    .person-role { font-size: 0.8rem; color: #6b7a8d; }
+  </style>
+</head>
+<body>
+
+  <nav id="plat-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img class="nav-logo-icon" src="plat-icon-final.svg" alt="Plat icon">
+        <span class="nav-wordmark">Plat</span>
+        <div class="nav-divider"></div>
+        <span class="nav-tagline">American Housing, Mapped and Measured</span>
+      </a>
+      <div class="nav-links">
+        <a href="explore/index.html" class="nav-cta">Explore Maps</a>
+        <a href="stories.html" class="nav-stories">Stories</a>
+        <a href="about.html" class="active">About</a>
+        <a href="data.html">Data</a>
+        <a href="methodology.html">Methodology</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-main">
+
+    <section class="hero" style="padding-top: 56px; padding-bottom: 40px">
+      <div class="hero-eyebrow">The Project</div>
+      <h1>About <em>Plat</em></h1>
+      <p>Plat makes federal mortgage data accessible — transforming tens of millions of raw loan records into maps that anyone can read and explore.</p>
+    </section>
+
+    <div class="section">
+      <div class="section-label">Mission</div>
+      <h2>Why Plat Exists</h2>
+      <p class="section-sub">The Home Mortgage Disclosure Act has required lenders to report loan-level data since 1975. That data is public — but parsing it is not easy. Plat does the aggregation work so researchers, journalists, and community advocates can focus on the questions that matter.</p>
+
+      <div class="prose">
+        <p>Every year, thousands of banks, credit unions, and mortgage companies submit detailed records on every home loan application they receive — who applied, where the property was, how much income the applicant reported, and whether the loan was approved. Under HMDA, those records are public.</p>
+        <p>The problem is scale. A single year of national HMDA data contains roughly 15 to 20 million records. Finding patterns — which neighborhoods are being served, which racial groups are taking out loans, how income levels vary by geography — requires significant data processing before any insight is possible.</p>
+        <p>Plat solves that problem. Our pipeline ingests raw HMDA data from the Consumer Financial Protection Bureau, aggregates it to the census tract level, and serves it through interactive choropleth maps that let you drill from the national level down to individual neighborhoods in seconds.</p>
+        <h3>What "Plat" Means</h3>
+        <p>A plat is a surveyor's map — a legal record of land boundaries, lots, and parcels. It's the document that turns raw geography into legible ownership. We borrowed the name because that's what we're trying to do with lending data: turn an unwieldy federal record into something you can actually read.</p>
+      </div>
+    </div>
+
+    <div class="section" style="padding-top: 0">
+      <div class="section-label">Coverage</div>
+      <h2>What the Data Covers</h2>
+
+      <div class="stat-row" style="margin-bottom: 32px">
+        <div class="stat-cell">
+          <div class="stat-val">18</div>
+          <div class="stat-label">Years of Data</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val">50</div>
+          <div class="stat-label">States + D.C.</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val">84K+</div>
+          <div class="stat-label">Census Tracts</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-val">200M+</div>
+          <div class="stat-label">Loan Records Processed</div>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-card">
+          <h4>Geographic Levels</h4>
+          <p>Maps are available at the state, county, and census tract level. Double-click on any state to zoom to counties; double-click a county to load individual tract data.</p>
+        </div>
+        <div class="about-card">
+          <h4>Race &amp; Ethnicity</h4>
+          <p>Five racial and ethnic categories: Asian, Black or African American, Hispanic or Latino, White, and Multiracial. Categories follow HMDA reporting standards and U.S. Census definitions.</p>
+        </div>
+        <div class="about-card">
+          <h4>Time Coverage</h4>
+          <p>2007–2024. Pre-2018 data uses the legacy HMDA LAR format; 2018–2024 uses the modernized CFPB format with expanded fields. Year-over-year comparisons are supported throughout.</p>
+        </div>
+        <div class="about-card">
+          <h4>Loan Type</h4>
+          <p>All Plat maps currently focus on home-purchase originations — loans that closed for the purpose of buying a primary residence, second home, or investment property.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="padding-top: 0">
+      <div class="section-label">Audience</div>
+      <h2>Who Uses Plat</h2>
+      <div class="prose">
+        <p>Plat is designed for anyone who works with housing data but doesn't have the infrastructure to process HMDA at scale. In practice, that means:</p>
+        <p><strong>Journalists and editors</strong> who want to report on lending patterns in specific cities or counties without needing a data team. Plat makes it possible to identify story leads — unusual gaps, outlier tracts, dramatic year-over-year shifts — in minutes.</p>
+        <p><strong>Community development organizations</strong> and fair housing advocates who need evidence of lending disparities for grant applications, litigation support, or policy advocacy.</p>
+        <p><strong>Academic researchers</strong> studying residential segregation, credit access, or neighborhood change who want pre-aggregated data they can join to other census variables.</p>
+        <p><strong>Planning departments and local governments</strong> tracking mortgage activity in their jurisdictions as part of comprehensive planning or CRA (Community Reinvestment Act) assessment work.</p>
+      </div>
+    </div>
+
+    <div class="section" style="padding-top: 0">
+      <div class="section-label">Citation</div>
+      <h2>How to Cite Plat</h2>
+      <div class="prose">
+        <p>If you use Plat's maps or data in published work, please cite both Plat and the underlying CFPB HMDA source data:</p>
+        <div class="cite-block">Plat: American Housing, Mapped and Measured (2025). Home Mortgage Disclosure Act visualization and aggregation. Data sourced from the Consumer Financial Protection Bureau HMDA Data Browser. https://plat.app</div>
+        <p style="margin-top: 16px">For the underlying raw data, cite the CFPB directly:</p>
+        <div class="cite-block">Consumer Financial Protection Bureau (2024). Home Mortgage Disclosure Act (HMDA) Public Data. https://ffiec.cfpb.gov/data-browser/</div>
+      </div>
+    </div>
+
+    <div class="section" style="padding-top: 0">
+      <div class="section-label">Open Source</div>
+      <h2>Built in the Open</h2>
+      <div class="prose">
+        <p>Plat's data pipeline, aggregation logic, and front-end code are open source. The pipeline is written in Python and processes HMDA data using pandas, geopandas, and tippecanoe for tile generation. The maps use MapLibre GL JS for WebGL rendering and PMTiles for efficient vector tile delivery.</p>
+        <p>The full source code, including the aggregation pipeline and documentation on the data schema, is available on GitHub. Issues, pull requests, and questions are welcome.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer id="plat-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-wordmark">Plat</div>
+        <p>American Housing, Mapped and Measured. Explore mortgage lending patterns across every census tract in the nation.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a href="stories.html">Stories</a>
+        <a href="about.html">About</a>
+        <a href="data.html">Data &amp; Download</a>
+        <a href="methodology.html">Methodology</a>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="explore/index.html">All Maps</a>
+        <a href="explore/national.html">Homebuyers by Race</a>
+        <a href="explore/income.html">Homebuyers by Income</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>Data sourced from CFPB Home Mortgage Disclosure Act public records</span>
+      <span>Built with MapLibre GL · D3.js · PMTiles</span>
+    </div>
+  </footer>
+
+</body>
+</html>

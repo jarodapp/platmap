@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 90" width="420" height="90">
+
+  <!--
+    Plat — Dark-background variant (navy canvas)
+    For use on dark headers, hero sections, or dark-mode UI.
+  -->
+
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- Navy background -->
+  <rect width="420" height="90" fill="#1B3C59"/>
+
+  <!-- ── Grid: 7 cols × 4 rows, 10w × 18h, no col gap
+       Rows 0+1 abut, 4px white gap, rows 2+3 abut ─────────────────── -->
+
+  <!-- Band 1, Row 0 -->
+  <rect x="14" y="7"  width="10" height="18" fill="#ffffff" opacity="0.08"/>
+  <rect x="24" y="7"  width="10" height="18" fill="#0E9183" opacity="0.55"/>
+  <rect x="34" y="7"  width="10" height="18" fill="#0E9183" opacity="0.90"/>
+  <rect x="44" y="7"  width="10" height="18" fill="#D4840C" opacity="0.65"/>
+  <rect x="54" y="7"  width="10" height="18" fill="#1A7BBD" opacity="0.62"/>
+  <rect x="64" y="7"  width="10" height="18" fill="#C2546A" opacity="0.45"/>
+  <rect x="74" y="7"  width="10" height="18" fill="#ffffff" opacity="0.08"/>
+
+  <!-- Band 1, Row 1 -->
+  <rect x="14" y="25" width="10" height="18" fill="#0E9183" opacity="0.30"/>
+  <rect x="24" y="25" width="10" height="18" fill="#D4840C" opacity="0.65"/>
+  <rect x="34" y="25" width="10" height="18" fill="#D4840C"/>
+  <rect x="44" y="25" width="10" height="18" fill="#D4840C"/>
+  <rect x="54" y="25" width="10" height="18" fill="#1A7BBD"/>
+  <rect x="64" y="25" width="10" height="18" fill="#C2546A" opacity="0.72"/>
+  <rect x="74" y="25" width="10" height="18" fill="#ffffff" opacity="0.55"/>
+
+  <!-- Band 2, Row 2 -->
+  <rect x="14" y="47" width="10" height="18" fill="#7C5CBF" opacity="0.52"/>
+  <rect x="24" y="47" width="10" height="18" fill="#7C5CBF"/>
+  <rect x="34" y="47" width="10" height="18" fill="#C2546A" opacity="0.72"/>
+  <rect x="44" y="47" width="10" height="18" fill="#C2546A"/>
+  <rect x="54" y="47" width="10" height="18" fill="#0E9183" opacity="0.80"/>
+  <rect x="64" y="47" width="10" height="18" fill="#1A7BBD" opacity="0.55"/>
+  <rect x="74" y="47" width="10" height="18" fill="#ffffff" opacity="0.40"/>
+
+  <!-- Band 2, Row 3 -->
+  <rect x="14" y="65" width="10" height="18" fill="#ffffff" opacity="0.08"/>
+  <rect x="24" y="65" width="10" height="18" fill="#7C5CBF" opacity="0.35"/>
+  <rect x="34" y="65" width="10" height="18" fill="#D4840C" opacity="0.45"/>
+  <rect x="44" y="65" width="10" height="18" fill="#0E9183" opacity="0.40"/>
+  <rect x="54" y="65" width="10" height="18" fill="#C2546A" opacity="0.48"/>
+  <rect x="64" y="65" width="10" height="18" fill="#1A7BBD" opacity="0.32"/>
+  <rect x="74" y="65" width="10" height="18" fill="#ffffff" opacity="0.08"/>
+
+  <!-- ── Divider ───────────────────────────────────────────────────── -->
+  <line x1="97" y1="10" x2="97" y2="80"
+        stroke="#ffffff" stroke-width="1" stroke-linecap="round" opacity="0.18"/>
+
+  <!-- ── Wordmark ────────────────────────────────────────────────────── -->
+  <text
+    x="110" y="57"
+    font-family="'Montserrat', Arial, sans-serif"
+    font-size="46"
+    font-weight="700"
+    fill="#F7F8FA"
+    letter-spacing="-0.5">Plat</text>
+
+  <!-- ── Tagline ─────────────────────────────────────────────────────── -->
+  <text
+    x="112" y="73"
+    font-family="'Montserrat', Arial, sans-serif"
+    font-size="9"
+    font-weight="400"
+    fill="#7EC8E3"
+    letter-spacing="1.1">AMERICAN HOUSING, MAPPED AND MEASURED</text>
+
+</svg>

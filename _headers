@@ -1,0 +1,22 @@
+# Cloudflare Pages _headers
+# Applied to all responses from platmap.org
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Allow CORS on data JSON files (so scripts on other origins can fetch them)
+/data/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400
+
+# Cache static assets aggressively (they only change on redeploy)
+/explore/img/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/plat.css
+  Cache-Control: public, max-age=86400

@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; font-family: system-ui, -apple-system, sans-serif; color: #333; }
-    body { display: flex; flex-direction: column; }
 
     /* Header */
     #header {
@@ -31,36 +29,53 @@
     .view-toggle:not(.active):hover { background: rgba(255,255,255,0.5); color: #222; }
     #breadcrumb { flex: 0 1 220px; overflow: hidden; text-overflow: ellipsis; color: #666; font-size: 12px; }
 
-    /* Dual year slider */
+    /* Dual-thumb year slider */
     #yr-slider-wrap {
       flex: 0 0 auto;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 12px;
-      color: #555;
+      gap: 8px;
     }
-    .yr-half {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .yr-year-lbl {
+      font-size: 12px; font-weight: 700; color: #333; min-width: 30px;
     }
-    .yr-half label { font-size: 11px; color: #888; font-weight: 500; }
-    .yr-half input[type=range] {
-      width: 110px;
-      cursor: pointer;
-      accent-color: #2B6CB0;
+    #yr-start-lbl { text-align: right; }
+    #yr-end-lbl   { text-align: left; }
+    #yr-track-outer {
+      position: relative;
+      width: 200px;
+      padding: 18px 0 0;   /* top space for the From/To label above dot */
     }
-    #yr-start-input { accent-color: #6B8B3E; }
-    #yr-end-input   { accent-color: #2B6CB0; }
-    .yr-val {
-      font-size: 11px;
-      font-weight: 600;
-      color: #333;
-      min-width: 28px;
-      text-align: center;
+    #yr-track {
+      position: relative; height: 4px;
+      background: #e0e0e0; border-radius: 2px;
     }
-    #yr-divider { color: #bbb; font-size: 16px; }
+    #yr-range-fill {
+      position: absolute; top: 0; height: 100%;
+      background: linear-gradient(to right, #6B8B3E, #2B6CB0);
+      border-radius: 2px; pointer-events: none;
+    }
+    .yr-thumb {
+      position: absolute; top: 50%;
+      cursor: grab; user-select: none; z-index: 3;
+    }
+    .yr-thumb:active { cursor: grabbing; }
+    .yr-thumb-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: white; border: 2.5px solid #555;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.22);
+      transition: box-shadow 120ms;
+    }
+    .yr-thumb:hover .yr-thumb-dot { box-shadow: 0 0 0 4px rgba(0,0,0,0.08); }
+    #yr-thumb-start .yr-thumb-dot { border-color: #6B8B3E; }
+    #yr-thumb-end   .yr-thumb-dot { border-color: #2B6CB0; }
+    .yr-thumb-label {
+      position: absolute; bottom: 16px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px; font-weight: 600; color: #888;
+      white-space: nowrap; pointer-events: none; letter-spacing: 0.3px;
+    }
     #yr-loading { font-size: 11px; color: #aaa; display: none; }
     #yr-loading.show { display: inline; }
 
@@ -170,19 +185,23 @@
     #zoom-hint { position: absolute; bottom: 20px; left: 20px; font-size: 11px; color: #999; pointer-events: none; }
   </style>
 </head>
-<body>
+<body class="dashboard-page">
 
-  <!-- Global nav (reuse plat.css nav) -->
-  <nav class="site-nav">
-    <a href="../index.html" class="nav-brand">
-      <img src="../plat-logo-final.svg" alt="Plat" height="22" style="vertical-align:middle">
-    </a>
-    <div class="nav-links">
-      <a href="index.html" class="nav-cta">Explore Maps</a>
-      <a href="../stories.html" class="nav-stories">Stories</a>
-      <a href="../about.html">About</a>
-      <a href="../data.html">Data</a>
-      <a href="../methodology.html">Methodology</a>
+  <nav id="plat-nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">
+        <img class="nav-logo-icon" src="../plat-icon-final.svg" alt="Plat">
+        <span class="nav-wordmark">Plat</span>
+        <div class="nav-divider"></div>
+        <span class="nav-tagline">American Housing, Mapped and Measured</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-cta">Explore Maps</a>
+        <a href="../stories.html" class="nav-stories">Stories</a>
+        <a href="../about.html">About</a>
+        <a href="../data.html">Data</a>
+        <a href="../methodology.html">Methodology</a>
+      </div>
     </div>
   </nav>
 
@@ -205,20 +224,24 @@
       <div id="search-results"></div>
     </div>
 
-    <!-- Dual year slider -->
+    <!-- Dual-thumb year slider -->
     <div id="yr-slider-wrap">
-      <div class="yr-half">
-        <label for="yr-start-input">From</label>
-        <input type="range" id="yr-start-input" min="0" max="17" value="0" step="1">
-        <span class="yr-val" id="yr-start-lbl">2007</span>
+      <span class="yr-year-lbl" id="yr-start-lbl">2022</span>
+      <div id="yr-track-outer">
+        <div id="yr-track">
+          <div id="yr-range-fill"></div>
+          <div class="yr-thumb" id="yr-thumb-start">
+            <div class="yr-thumb-dot"></div>
+            <span class="yr-thumb-label">From</span>
+          </div>
+          <div class="yr-thumb" id="yr-thumb-end">
+            <div class="yr-thumb-dot"></div>
+            <span class="yr-thumb-label">To</span>
+          </div>
+        </div>
       </div>
-      <span id="yr-divider">→</span>
-      <div class="yr-half">
-        <label for="yr-end-input">To</label>
-        <input type="range" id="yr-end-input" min="0" max="17" value="17" step="1">
-        <span class="yr-val" id="yr-end-lbl">2024</span>
-      </div>
-      <span id="yr-loading">⏳ Loading…</span>
+      <span class="yr-year-lbl" id="yr-end-lbl">2024</span>
+      <span id="yr-loading">⏳</span>
     </div>
 
     <span id="map-tip">State view</span>
@@ -267,8 +290,6 @@
 
   </div><!-- /.dashboard-frame -->
 
-  <div id="tt"></div>
-
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
   <script>
@@ -292,8 +313,8 @@
   let cdf = null;           // income_cdf.json: {year: [1001 quantiles]}
   let dataCache = {};       // "states_2024" -> {fips: {...}}
   let changes  = {};        // fips -> {delta, pctStart, pctEnd, txStart, txEnd}
-  let selYearStart = ALL_YEARS[0];
-  let selYearEnd   = ALL_YEARS[ALL_YEARS.length - 1];
+  let selYearStart = 2022;
+  let selYearEnd   = 2024;
   let changesReady = false;
   let selFips = null;       // currently selected geography fips
   let featureNameCache = {};
@@ -643,27 +664,9 @@
   // YEAR SLIDER LOGIC
   // ============================================================================
   let reloadTimer = null;
-  function onYearChange() {
-    const startIdx = parseInt(document.getElementById("yr-start-input").value);
-    const endIdx   = parseInt(document.getElementById("yr-end-input").value);
 
-    // Enforce start ≤ end (snap)
-    let s = Math.min(startIdx, endIdx);
-    let e = Math.max(startIdx, endIdx);
-    if (s === e) { // force at least 1-year gap
-      e = Math.min(e + 1, ALL_YEARS.length - 1);
-      s = Math.max(s - 1, 0);
-    }
-
-    selYearStart = ALL_YEARS[s];
-    selYearEnd   = ALL_YEARS[e];
-    document.getElementById("yr-start-input").value = s;
-    document.getElementById("yr-end-input").value   = e;
-    document.getElementById("yr-start-lbl").textContent = selYearStart;
-    document.getElementById("yr-end-lbl").textContent   = selYearEnd;
-
+  function triggerChange() {
     changesReady = false;
-    // Debounce to avoid loading on every tick
     clearTimeout(reloadTimer);
     const loading = document.getElementById("yr-loading");
     if (loading) loading.classList.add("show");
@@ -672,6 +675,80 @@
       if (loading) loading.classList.remove("show");
       pushHash();
     }, 350);
+  }
+
+  function initDualSlider() {
+    const track      = document.getElementById("yr-track");
+    const thumbStart = document.getElementById("yr-thumb-start");
+    const thumbEnd   = document.getElementById("yr-thumb-end");
+    const fill       = document.getElementById("yr-range-fill");
+    const N          = ALL_YEARS.length - 1;
+
+    function renderThumbs() {
+      const iS = ALL_YEARS.indexOf(selYearStart);
+      const iE = ALL_YEARS.indexOf(selYearEnd);
+      const pS = (iS / N) * 100;
+      const pE = (iE / N) * 100;
+      thumbStart.style.left = pS + "%";
+      thumbEnd.style.left   = pE + "%";
+      fill.style.left  = pS + "%";
+      fill.style.width = (pE - pS) + "%";
+      document.getElementById("yr-start-lbl").textContent = selYearStart;
+      document.getElementById("yr-end-lbl").textContent   = selYearEnd;
+    }
+
+    function pixToIdx(clientX) {
+      const rect = track.getBoundingClientRect();
+      const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return Math.round(frac * N);
+    }
+
+    let dragging = null;
+
+    function onMove(e) {
+      if (!dragging) return;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      let idx = pixToIdx(cx);
+      if (dragging === "start") {
+        idx = Math.max(0, Math.min(idx, ALL_YEARS.indexOf(selYearEnd) - 1));
+        if (ALL_YEARS[idx] !== selYearStart) {
+          selYearStart = ALL_YEARS[idx];
+          renderThumbs();
+          triggerChange();
+        }
+      } else {
+        idx = Math.max(ALL_YEARS.indexOf(selYearStart) + 1, Math.min(N, idx));
+        if (ALL_YEARS[idx] !== selYearEnd) {
+          selYearEnd = ALL_YEARS[idx];
+          renderThumbs();
+          triggerChange();
+        }
+      }
+    }
+
+    function onUp() {
+      dragging = null;
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup",   onUp);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend",  onUp);
+    }
+
+    function startDrag(which, e) {
+      e.preventDefault();
+      dragging = which;
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup",   onUp);
+      document.addEventListener("touchmove", onMove, { passive: false });
+      document.addEventListener("touchend",  onUp);
+    }
+
+    thumbStart.addEventListener("mousedown",  e => startDrag("start", e));
+    thumbEnd.addEventListener("mousedown",    e => startDrag("end",   e));
+    thumbStart.addEventListener("touchstart", e => startDrag("start", e), { passive: false });
+    thumbEnd.addEventListener("touchstart",   e => startDrag("end",   e), { passive: false });
+
+    renderThumbs();
   }
 
   // ============================================================================
@@ -688,25 +765,35 @@
     const inCounty = z >= ZOOM_COUNTY && z < ZOOM_TRACT;
     const inTract  = z >= ZOOM_TRACT;
 
+    // States: visible at state level; outline persists at county level as dark border
     setVis("states-src-fill",    inState);
-    setVis("states-src-outline", true);
-    setVis("counties-src-fill",    inCounty || inTract);
-    setVis("counties-src-outline", inCounty || inTract);
+    setVis("states-src-outline", inState || inCounty);
+    if (map.getLayer("states-src-outline")) {
+      map.setPaintProperty("states-src-outline", "line-color", inCounty ? "#222" : "#aaa");
+      map.setPaintProperty("states-src-outline", "line-width", 1.5);
+    }
 
-    // Tract layers
-    ["2000","2010","2020"].forEach(ep => {
-      const active = inTract && ep === String(epochFor(selYearEnd));
-      setVis(`tracts-${ep}-src-fill`,    active);
-      setVis(`tracts-${ep}-src-outline`, active);
+    // Counties: visible at county/tract level; outline persists at tract level as dark border
+    setVis("counties-src-fill",    inCounty);
+    setVis("counties-src-outline", inCounty || inTract);
+    if (map.getLayer("counties-src-outline")) {
+      map.setPaintProperty("counties-src-outline", "line-color", inTract ? "#333" : "#bbb");
+      map.setPaintProperty("counties-src-outline", "line-width", inTract ? 0.8 : 0.5);
+    }
+
+    // Tracts: only the epoch matching selYearEnd is shown
+    const activeTracts = `tracts-${epochFor(selYearEnd)}-src`;
+    ["tracts-2000-src", "tracts-2010-src", "tracts-2020-src"].forEach(id => {
+      const on = inTract && id === activeTracts;
+      setVis(`${id}-fill`,    on);
+      setVis(`${id}-outline`, on);
     });
 
     const tipEl = document.getElementById("map-tip");
     if (tipEl) tipEl.textContent = inState ? "State view" : inCounty ? "County view" : "Tract view";
 
-    // Recompute if switching zoom level
-    if (changesReady) {
-      computeChanges(selYearStart, selYearEnd);
-    }
+    // Recompute data when crossing zoom thresholds
+    if (changesReady) computeChanges(selYearStart, selYearEnd);
   }
 
   // ============================================================================
@@ -839,12 +926,6 @@
       if (ALL_YEARS.includes(hash.yearStart)) selYearStart = hash.yearStart;
       if (ALL_YEARS.includes(hash.yearEnd))   selYearEnd   = hash.yearEnd;
     }
-    // Sync sliders
-    document.getElementById("yr-start-input").value = ALL_YEARS.indexOf(selYearStart);
-    document.getElementById("yr-end-input").value   = ALL_YEARS.indexOf(selYearEnd);
-    document.getElementById("yr-start-lbl").textContent = selYearStart;
-    document.getElementById("yr-end-lbl").textContent   = selYearEnd;
-
     // Create map
     map = new maplibregl.Map({
       container: "map-container",
@@ -910,11 +991,11 @@
       const isTracts = src.id.startsWith("tracts-");
       const isSt     = src.id === "states-src";
 
-      // Fill — light gray
+      // Fill — semi-transparent white so base map shows through
       map.addLayer({
         id: `${src.id}-fill`,
         type: "fill", source: src.id, "source-layer": sl,
-        paint: { "fill-color": "#e8ecef", "fill-opacity": isTracts ? 0.6 : 0.5 },
+        paint: { "fill-color": "#ffffff", "fill-opacity": isTracts ? 0.55 : 0.65 },
         layout: { visibility: isSt ? "none" : "visible" }
       });
       // Outline
@@ -940,8 +1021,12 @@
         tooltipFor(fips);
         const ttEl = document.getElementById("tt");
         if (ttEl) {
-          ttEl.style.left = (e.originalEvent.clientX + 14) + "px";
-          ttEl.style.top  = (e.originalEvent.clientY - 28) + "px";
+          const cx = e.originalEvent.clientX;
+          const cy = e.originalEvent.clientY;
+          const TT_W = 300; // conservative tooltip width estimate
+          const flipLeft = cx + 18 + TT_W > window.innerWidth;
+          ttEl.style.left = flipLeft ? (cx - TT_W - 14) + "px" : (cx + 14) + "px";
+          ttEl.style.top  = Math.max(8, cy - 28) + "px";
           ttEl.classList.add("active");
         }
         map.getCanvas().style.cursor = "pointer";
@@ -1014,9 +1099,8 @@
       pushHash();
     });
 
-    // Year sliders
-    document.getElementById("yr-start-input").addEventListener("input", onYearChange);
-    document.getElementById("yr-end-input").addEventListener("input",   onYearChange);
+    // Dual-thumb year slider
+    initDualSlider();
 
     // Share button
     document.getElementById("share-btn").addEventListener("click", () => {

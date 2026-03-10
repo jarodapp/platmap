@@ -44,7 +44,6 @@
     #yr-track-outer {
       position: relative;
       width: 200px;
-      padding: 18px 0 0;   /* top space for the From/To label above dot */
     }
     #yr-track {
       position: relative; height: 4px;
@@ -61,21 +60,23 @@
     }
     .yr-thumb:active { cursor: grabbing; }
     .yr-thumb-dot {
-      width: 14px; height: 14px; border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       background: white; border: 2.5px solid #555;
       transform: translate(-50%, -50%);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.22);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.22);
       transition: box-shadow 120ms;
+      display: flex; align-items: center; justify-content: center;
     }
-    .yr-thumb:hover .yr-thumb-dot { box-shadow: 0 0 0 4px rgba(0,0,0,0.08); }
+    .yr-thumb:hover .yr-thumb-dot { box-shadow: 0 0 0 5px rgba(0,0,0,0.08); }
     #yr-thumb-start .yr-thumb-dot { border-color: #6B8B3E; }
     #yr-thumb-end   .yr-thumb-dot { border-color: #2B6CB0; }
     .yr-thumb-label {
-      position: absolute; bottom: 16px; left: 50%;
-      transform: translateX(-50%);
-      font-size: 9px; font-weight: 600; color: #888;
-      white-space: nowrap; pointer-events: none; letter-spacing: 0.3px;
+      font-size: 9px; font-weight: 700; color: #555;
+      pointer-events: none; letter-spacing: 0.3px;
+      text-align: center; line-height: 1; user-select: none;
     }
+    #yr-thumb-start .yr-thumb-label { color: #6B8B3E; }
+    #yr-thumb-end   .yr-thumb-label { color: #2B6CB0; }
     #yr-loading { font-size: 11px; color: #aaa; display: none; }
     #yr-loading.show { display: inline; }
 
@@ -231,12 +232,10 @@
         <div id="yr-track">
           <div id="yr-range-fill"></div>
           <div class="yr-thumb" id="yr-thumb-start">
-            <div class="yr-thumb-dot"></div>
-            <span class="yr-thumb-label">From</span>
+            <div class="yr-thumb-dot"><span class="yr-thumb-label">From</span></div>
           </div>
           <div class="yr-thumb" id="yr-thumb-end">
-            <div class="yr-thumb-dot"></div>
-            <span class="yr-thumb-label">To</span>
+            <div class="yr-thumb-dot"><span class="yr-thumb-label">To</span></div>
           </div>
         </div>
       </div>
@@ -419,18 +418,11 @@
   // COMPUTE CHANGES
   // ============================================================================
   async function computeChanges(yearStart, yearEnd) {
-    const z = map ? map.getZoom() : 4;
-    const isTracts  = z >= ZOOM_TRACT;
-    const isCounty  = z >= ZOOM_COUNTY && !isTracts;
-
-    let dStart, dEnd;
-    if (isTracts) {
-      [dStart, dEnd] = await Promise.all([ensureTractData(yearStart), ensureTractData(yearEnd)]);
-    } else if (isCounty) {
-      [dStart, dEnd] = await Promise.all([ensureData("counties", yearStart), ensureData("counties", yearEnd)]);
-    } else {
-      [dStart, dEnd] = await Promise.all([ensureData("states", yearStart), ensureData("states", yearEnd)]);
-    }
+    // Always use county-level data regardless of zoom level
+    const [dStart, dEnd] = await Promise.all([
+      ensureData("counties", yearStart),
+      ensureData("counties", yearEnd)
+    ]);
 
     const qStart = cdf[String(yearStart)];
     const qEnd   = cdf[String(yearEnd)];
@@ -544,20 +536,9 @@
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const z = map.getZoom();
-    let layer, padLen;
-    if (z < ZOOM_COUNTY) {
-      layer  = "states-src-fill";
-      padLen = 2;
-    } else if (z < ZOOM_TRACT) {
-      layer  = "counties-src-fill";
-      padLen = 5;
-    } else {
-      // Tract level — use whichever epoch layer is visible
-      const ep = epochFor(selYearEnd);
-      layer  = `tracts-${ep}-src-fill`;
-      padLen = 11;
-    }
+    // Always draw county-level arrows
+    const layer  = "counties-src-fill";
+    const padLen = 5;
 
     const feats = map.queryRenderedFeatures({ layers: [layer] });
     const seen  = new Set();
@@ -760,40 +741,40 @@
   }
 
   function handleZoom() {
-    const z = map.getZoom();
-    const inState  = z < ZOOM_COUNTY;
-    const inCounty = z >= ZOOM_COUNTY && z < ZOOM_TRACT;
-    const inTract  = z >= ZOOM_TRACT;
+    const z         = map.getZoom();
+    const broadView = z < ZOOM_COUNTY;  // initial / zoomed-out
+    const closeView = z >= ZOOM_COUNTY; // zoomed in enough for county borders
 
-    // States: visible at state level; outline persists at county level as dark border
-    setVis("states-src-fill",    inState);
-    setVis("states-src-outline", inState || inCounty);
+    // State fill: never shown; state outline: always visible, darker when zoomed in
+    setVis("states-src-fill",    false);
+    setVis("states-src-outline", true);
     if (map.getLayer("states-src-outline")) {
-      map.setPaintProperty("states-src-outline", "line-color", inCounty ? "#222" : "#aaa");
-      map.setPaintProperty("states-src-outline", "line-width", 1.5);
+      map.setPaintProperty("states-src-outline", "line-color", closeView ? "#222" : "#aaa");
+      map.setPaintProperty("states-src-outline", "line-width", closeView ? 1.5 : 1);
     }
 
-    // Counties: visible at county/tract level; outline persists at tract level as dark border
-    setVis("counties-src-fill",    inCounty);
-    setVis("counties-src-outline", inCounty || inTract);
+    // County fill: always on for mouse hit-testing; nearly transparent when zoomed out
+    // County outline: only shown when zoomed in
+    setVis("counties-src-fill",    true);
+    setVis("counties-src-outline", closeView);
+    if (map.getLayer("counties-src-fill")) {
+      map.setPaintProperty("counties-src-fill", "fill-opacity", broadView ? 0.01 : 0.65);
+    }
     if (map.getLayer("counties-src-outline")) {
-      map.setPaintProperty("counties-src-outline", "line-color", inTract ? "#333" : "#bbb");
-      map.setPaintProperty("counties-src-outline", "line-width", inTract ? 0.8 : 0.5);
+      map.setPaintProperty("counties-src-outline", "line-color", "#bbb");
+      map.setPaintProperty("counties-src-outline", "line-width", 0.5);
     }
 
-    // Tracts: only the epoch matching selYearEnd is shown
-    const activeTracts = `tracts-${epochFor(selYearEnd)}-src`;
+    // Tracts: never shown
     ["tracts-2000-src", "tracts-2010-src", "tracts-2020-src"].forEach(id => {
-      const on = inTract && id === activeTracts;
-      setVis(`${id}-fill`,    on);
-      setVis(`${id}-outline`, on);
+      setVis(`${id}-fill`,    false);
+      setVis(`${id}-outline`, false);
     });
 
     const tipEl = document.getElementById("map-tip");
-    if (tipEl) tipEl.textContent = inState ? "State view" : inCounty ? "County view" : "Tract view";
+    if (tipEl) tipEl.textContent = broadView ? "State view" : "County view";
 
-    // Recompute data when crossing zoom thresholds
-    if (changesReady) computeChanges(selYearStart, selYearEnd);
+    scheduleArrows();
   }
 
   // ============================================================================
@@ -1053,9 +1034,6 @@
       });
     });
 
-    // Label layer on top
-    map.addLayer({ id: "carto-labels-layer", type: "raster", source: "carto-labels" });
-
     // Arrow canvas
     const mapEl     = document.getElementById("map-container");
     const arrowCanvas = document.getElementById("arrow-canvas");
@@ -1070,7 +1048,7 @@
     // Redraw arrows on map movement
     map.on("render",  scheduleArrows);
     map.on("moveend", () => { pushHash(); scheduleArrows(); });
-    map.on("zoomend", () => { handleZoom(); computeChanges(selYearStart, selYearEnd); pushHash(); });
+    map.on("zoomend", () => { handleZoom(); pushHash(); });
 
     // Initial layer visibility
     handleZoom();

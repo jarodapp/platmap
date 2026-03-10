@@ -418,11 +418,16 @@
   // COMPUTE CHANGES
   // ============================================================================
   async function computeChanges(yearStart, yearEnd) {
-    // Always use county-level data regardless of zoom level
-    const [dStart, dEnd] = await Promise.all([
-      ensureData("counties", yearStart),
-      ensureData("counties", yearEnd)
-    ]);
+    const z = map ? map.getZoom() : 4;
+    const isTracts = z >= ZOOM_TRACT;
+
+    let dStart, dEnd;
+    if (isTracts) {
+      [dStart, dEnd] = await Promise.all([ensureTractData(yearStart), ensureTractData(yearEnd)]);
+    } else {
+      // County data at both state-level and county-level zoom
+      [dStart, dEnd] = await Promise.all([ensureData("counties", yearStart), ensureData("counties", yearEnd)]);
+    }
 
     const qStart = cdf[String(yearStart)];
     const qEnd   = cdf[String(yearEnd)];
@@ -486,13 +491,13 @@
     }
   }
 
-  function drawOneArrow(ctx, x, y, delta, tx) {
+  function drawOneArrow(ctx, x, y, delta, tx, sizeScale = 1) {
     // delta: percentile point change; tx: transaction count for sizing
     const abs  = Math.abs(delta);
     const norm = Math.max(-1, Math.min(1, delta / 40));
     // Canvas rotation: 0=right(3 o'clock), -π/2=up(12), +π/2=down(6)
     const canvasAngle = -norm * Math.PI / 2;
-    const size = Math.max(7, Math.min(15, 5 + Math.log10(Math.max(1, tx)) * 2.8));
+    const size = Math.max(7, Math.min(15, 5 + Math.log10(Math.max(1, tx)) * 2.8)) * sizeScale;
     const rgb  = arrowColor(delta, abs);
     if (!rgb) return;
 
@@ -536,9 +541,19 @@
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Always draw county-level arrows
-    const layer  = "counties-src-fill";
-    const padLen = 5;
+    const z        = map.getZoom();
+    const isTracts = z >= ZOOM_TRACT;
+    const broadView = z < ZOOM_COUNTY;
+    let layer, padLen;
+    if (isTracts) {
+      layer  = `tracts-${epochFor(selYearEnd)}-src-fill`;
+      padLen = 11;
+    } else {
+      layer  = "counties-src-fill";
+      padLen = 5;
+    }
+    // Smaller arrows at the initial broad/state-level zoom
+    const sizeScale = broadView ? 0.5 : 1.0;
 
     const feats = map.queryRenderedFeatures({ layers: [layer] });
     const seen  = new Set();
@@ -557,7 +572,7 @@
         const pt = map.project([lng, lat]);
         if (pt.x < -20 || pt.x > canvas.width + 20 ||
             pt.y < -20 || pt.y > canvas.height + 20) continue;
-        drawOneArrow(ctx, pt.x, pt.y, info.delta, info.txStart + info.txEnd);
+        drawOneArrow(ctx, pt.x, pt.y, info.delta, info.txStart + info.txEnd, sizeScale);
       } catch (_) {}
     }
   }
@@ -741,22 +756,23 @@
   }
 
   function handleZoom() {
-    const z         = map.getZoom();
-    const broadView = z < ZOOM_COUNTY;  // initial / zoomed-out
-    const closeView = z >= ZOOM_COUNTY; // zoomed in enough for county borders
+    const z          = map.getZoom();
+    const broadView  = z < ZOOM_COUNTY;                      // initial / state zoom
+    const countyView = z >= ZOOM_COUNTY && z < ZOOM_TRACT;   // county zoom
+    const tractView  = z >= ZOOM_TRACT;                      // tract zoom
 
-    // State fill: never shown; state outline: always visible, darker when zoomed in
+    // State fill: never shown; outline: always visible, darker at county/tract zoom
     setVis("states-src-fill",    false);
     setVis("states-src-outline", true);
     if (map.getLayer("states-src-outline")) {
-      map.setPaintProperty("states-src-outline", "line-color", closeView ? "#222" : "#aaa");
-      map.setPaintProperty("states-src-outline", "line-width", closeView ? 1.5 : 1);
+      map.setPaintProperty("states-src-outline", "line-color", broadView ? "#aaa" : "#222");
+      map.setPaintProperty("states-src-outline", "line-width", broadView ? 1 : 1.5);
     }
 
-    // County fill: always on for mouse hit-testing; nearly transparent when zoomed out
-    // County outline: only shown when zoomed in
-    setVis("counties-src-fill",    true);
-    setVis("counties-src-outline", closeView);
+    // County fill: visible at state/county zoom (hidden when tracts take over)
+    // County outline: only at county zoom; nearly transparent fill at broad zoom
+    setVis("counties-src-fill",    !tractView);
+    setVis("counties-src-outline", countyView);
     if (map.getLayer("counties-src-fill")) {
       map.setPaintProperty("counties-src-fill", "fill-opacity", broadView ? 0.01 : 0.65);
     }
@@ -765,14 +781,15 @@
       map.setPaintProperty("counties-src-outline", "line-width", 0.5);
     }
 
-    // Tracts: never shown
+    // Tracts: fills visible at tract zoom (for arrows + hit-testing); outlines NEVER shown
+    const activeTracts = `tracts-${epochFor(selYearEnd)}-src`;
     ["tracts-2000-src", "tracts-2010-src", "tracts-2020-src"].forEach(id => {
-      setVis(`${id}-fill`,    false);
-      setVis(`${id}-outline`, false);
+      setVis(`${id}-fill`,    tractView && id === activeTracts);
+      setVis(`${id}-outline`, false);  // tract borders never shown
     });
 
     const tipEl = document.getElementById("map-tip");
-    if (tipEl) tipEl.textContent = broadView ? "State view" : "County view";
+    if (tipEl) tipEl.textContent = broadView ? "State view" : countyView ? "County view" : "Tract view";
 
     scheduleArrows();
   }
@@ -1048,7 +1065,7 @@
     // Redraw arrows on map movement
     map.on("render",  scheduleArrows);
     map.on("moveend", () => { pushHash(); scheduleArrows(); });
-    map.on("zoomend", () => { handleZoom(); pushHash(); });
+    map.on("zoomend", () => { handleZoom(); computeChanges(selYearStart, selYearEnd); pushHash(); });
 
     // Initial layer visibility
     handleZoom();

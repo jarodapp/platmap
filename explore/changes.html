@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Homebuyer Income Change · Plat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../plat.css">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; font-family: system-ui, -apple-system, sans-serif; color: #333; }
+    body { display: flex; flex-direction: column; }
+
+    /* Header */
+    #header {
+      flex: 0 0 46px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 0 24px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      white-space: nowrap;
+      overflow: visible;
+      font-size: 13px;
+    }
+    #title { flex-shrink: 0; display: flex; align-items: center; }
+    .view-toggle-group { display: flex; background: rgba(0,0,0,0.07); border-radius: 6px; padding: 2px; gap: 2px; }
+    .view-toggle { font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; color: #555; transition: background 0.15s, color 0.15s; white-space: nowrap; }
+    .view-toggle.active { background: white; color: #1a1a1a; box-shadow: 0 1px 3px rgba(0,0,0,0.12); font-weight: 600; }
+    .view-toggle:not(.active):hover { background: rgba(255,255,255,0.5); color: #222; }
+    #breadcrumb { flex: 0 1 220px; overflow: hidden; text-overflow: ellipsis; color: #666; font-size: 12px; }
+
+    /* Dual year slider */
+    #yr-slider-wrap {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #555;
+    }
+    .yr-half {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .yr-half label { font-size: 11px; color: #888; font-weight: 500; }
+    .yr-half input[type=range] {
+      width: 110px;
+      cursor: pointer;
+      accent-color: #2B6CB0;
+    }
+    #yr-start-input { accent-color: #6B8B3E; }
+    #yr-end-input   { accent-color: #2B6CB0; }
+    .yr-val {
+      font-size: 11px;
+      font-weight: 600;
+      color: #333;
+      min-width: 28px;
+      text-align: center;
+    }
+    #yr-divider { color: #bbb; font-size: 16px; }
+    #yr-loading { font-size: 11px; color: #aaa; display: none; }
+    #yr-loading.show { display: inline; }
+
+    /* Map tip + buttons */
+    #map-tip { flex: 1; text-align: right; color: #999; font-size: 11px; padding-right: 8px; }
+    .header-btn-group { flex: 0 0 auto; display: flex; gap: 6px; }
+    .zoom-btn {
+      width: 32px; height: 32px;
+      border: 1px solid #ccc; background: white; border-radius: 4px;
+      cursor: pointer; font-size: 15px; font-weight: 500;
+      transition: all 120ms; display: flex; align-items: center; justify-content: center;
+    }
+    .zoom-btn:hover { background: #f5f5f5; border-color: #999; }
+    #share-btn {
+      height: 28px; padding: 0 10px;
+      border: 1px solid #ccc; border-radius: 4px;
+      background: white; cursor: pointer; font-size: 11px; color: #444;
+      transition: all 120ms; white-space: nowrap;
+    }
+    #share-btn:hover { background: #f5f5f5; }
+    #share-btn.copied { border-color: #6B8B3E; color: #6B8B3E; background: #f4f9ed; }
+
+    /* Search box */
+    #search-wrap { position: relative; flex: 0 0 auto; }
+    #search-input {
+      width: 170px; height: 28px; padding: 0 24px 0 10px;
+      border: 1px solid #ccc; border-radius: 4px; font-size: 12px;
+      outline: none; background: white;
+    }
+    #search-input:focus { border-color: #2B6CB0; box-shadow: 0 0 0 2px rgba(43,108,176,0.15); }
+    #search-clear {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: #aaa; font-size: 16px; display: none; line-height: 1;
+    }
+    #search-results {
+      position: absolute; top: calc(100% + 4px); left: 0;
+      width: 300px; background: white; border: 1px solid #ddd;
+      border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      z-index: 1000; display: none; max-height: 240px; overflow-y: auto;
+    }
+    #search-results.open { display: block; }
+    .sr-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+    .sr-item:last-child { border-bottom: none; }
+    .sr-item:hover { background: #f7f9ff; }
+    .sr-item-main { font-weight: 600; font-size: 12px; color: #222; }
+    .sr-item-sub { font-size: 11px; color: #888; margin-top: 1px; }
+    .sr-msg { padding: 10px 12px; font-size: 12px; color: #888; }
+
+    /* Body */
+    #body-row { flex: 1; display: flex; overflow: hidden; }
+    #map-panel { flex: 1; position: relative; min-width: 400px; }
+    #map-container { width: 100%; height: 100%; }
+
+    /* Arrow canvas overlay */
+    #arrow-canvas {
+      position: absolute; top: 0; left: 0;
+      pointer-events: none; z-index: 5;
+    }
+
+    /* Tooltip */
+    #tt {
+      position: fixed; background: white; border-radius: 6px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15); padding: 12px;
+      font-size: 11px; max-width: 320px; pointer-events: none;
+      opacity: 0; transition: opacity 120ms; z-index: 1000; display: none;
+    }
+    #tt.active { opacity: 1; display: block; }
+    .tt-title { font-weight: 600; margin-bottom: 6px; font-size: 12px; }
+    .tt-pct-row { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center; }
+    .tt-pct-label { color: #666; }
+    .tt-pct-val { font-weight: 600; }
+    .tt-delta {
+      margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;
+      display: flex; align-items: center; gap: 8px; font-weight: 600;
+    }
+    .tt-arrow-preview { font-size: 20px; line-height: 1; }
+    .tt-delta-val { font-size: 14px; }
+    .tt-footer { font-size: 9px; color: #bbb; margin-top: 6px; }
+    .tt-no-data { color: #aaa; font-size: 11px; }
+
+    /* Legend */
+    #map-legend {
+      position: absolute; bottom: 30px; left: 14px;
+      background: rgba(255,255,255,0.95); border-radius: 8px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.13); padding: 12px 16px;
+      font-size: 11px; z-index: 10; pointer-events: none; min-width: 200px;
+    }
+    .legend-title { font-weight: 600; margin-bottom: 10px; color: #333; }
+    .legend-arrow-grid {
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center; gap: 4px 10px; margin-bottom: 10px;
+    }
+    .lag-label { font-size: 10px; color: #666; }
+    .lag-label.right { text-align: right; }
+    .lag-arrow { font-size: 22px; line-height: 1; text-align: center; }
+    .legend-color-bar {
+      display: flex; height: 10px; border-radius: 3px; overflow: hidden; margin-bottom: 4px;
+    }
+    .legend-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: #888; }
+    .legend-note { font-size: 9px; color: #bbb; margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px; }
+
+    /* Zoom controls */
+    #zoom-ctrl {
+      position: absolute; bottom: 100px; right: 20px;
+      display: flex; flex-direction: column; gap: 8px; z-index: 10;
+    }
+    #zoom-hint { position: absolute; bottom: 20px; left: 20px; font-size: 11px; color: #999; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Global nav (reuse plat.css nav) -->
+  <nav class="site-nav">
+    <a href="../index.html" class="nav-brand">
+      <img src="../plat-logo-final.svg" alt="Plat" height="22" style="vertical-align:middle">
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-cta">Explore Maps</a>
+      <a href="../stories.html" class="nav-stories">Stories</a>
+      <a href="../about.html">About</a>
+      <a href="../data.html">Data</a>
+      <a href="../methodology.html">Methodology</a>
+    </div>
+  </nav>
+
+  <div class="dashboard-frame">
+
+  <div id="header">
+    <div id="title">
+      <div class="view-toggle-group">
+        <a href="national.html" class="view-toggle">By Race</a>
+        <a href="income.html"   class="view-toggle">By Income</a>
+        <span class="view-toggle active">By Change</span>
+      </div>
+    </div>
+    <div id="breadcrumb"></div>
+
+    <!-- Search box -->
+    <div id="search-wrap">
+      <input id="search-input" type="text" placeholder="Search counties, cities…" autocomplete="off" spellcheck="false">
+      <span id="search-clear" title="Clear">×</span>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- Dual year slider -->
+    <div id="yr-slider-wrap">
+      <div class="yr-half">
+        <label for="yr-start-input">From</label>
+        <input type="range" id="yr-start-input" min="0" max="17" value="0" step="1">
+        <span class="yr-val" id="yr-start-lbl">2007</span>
+      </div>
+      <span id="yr-divider">→</span>
+      <div class="yr-half">
+        <label for="yr-end-input">To</label>
+        <input type="range" id="yr-end-input" min="0" max="17" value="17" step="1">
+        <span class="yr-val" id="yr-end-lbl">2024</span>
+      </div>
+      <span id="yr-loading">⏳ Loading…</span>
+    </div>
+
+    <span id="map-tip">State view</span>
+    <div class="header-btn-group">
+      <button id="share-btn" title="Copy shareable link">🔗 Share</button>
+      <button class="zoom-btn" id="zoom-in"    title="Zoom in">＋</button>
+      <button class="zoom-btn" id="zoom-out"   title="Zoom out">−</button>
+      <button class="zoom-btn" id="reset-view" title="Reset to US view">⌂</button>
+    </div>
+  </div>
+
+  <div id="body-row">
+    <div id="map-panel">
+      <div id="map-container"></div>
+      <canvas id="arrow-canvas"></canvas>
+      <div id="zoom-ctrl">
+        <button class="zoom-btn" id="zoom-in-2">＋</button>
+        <button class="zoom-btn" id="zoom-out-2">−</button>
+      </div>
+      <div id="zoom-hint">Hover for percentile change · Click to select · ⌂ to reset</div>
+      <div id="tt"></div>
+      <div id="map-legend">
+        <div class="legend-title">Income Percentile Change</div>
+        <div class="legend-arrow-grid">
+          <span class="lag-label right">Rising faster</span>
+          <span class="lag-arrow" id="leg-arrow-up">↑</span>
+          <span class="lag-label"></span>
+
+          <span class="lag-label right">No change</span>
+          <span class="lag-arrow" id="leg-arrow-flat">→</span>
+          <span class="lag-label"></span>
+
+          <span class="lag-label right">Falling faster</span>
+          <span class="lag-arrow" id="leg-arrow-dn">↓</span>
+          <span class="lag-label"></span>
+        </div>
+        <div class="legend-color-bar" id="legend-bar"></div>
+        <div class="legend-bar-label"><span>Falling</span><span>Rising</span></div>
+        <div class="legend-note">
+          Percentile = tract's rank among all U.S. tracts by median homebuyer income.<br>
+          Arrow rotation and color show direction and magnitude of change.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /.dashboard-frame -->
+
+  <div id="tt"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
+  <script>
+  // ============================================================================
+  // CONSTANTS
+  // ============================================================================
+  const ALL_YEARS = [2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+  const ZOOM_COUNTY = 6;
+  const ZOOM_TRACT  = 9;
+  const TILE_BASE   = "https://tiles.platmap.org";
+
+  // Epoch for tract PMTiles source
+  function epochFor(year) {
+    return year <= 2011 ? 2000 : year <= 2021 ? 2010 : 2020;
+  }
+
+  // ============================================================================
+  // STATE
+  // ============================================================================
+  let map;
+  let cdf = null;           // income_cdf.json: {year: [1001 quantiles]}
+  let dataCache = {};       // "states_2024" -> {fips: {...}}
+  let changes  = {};        // fips -> {delta, pctStart, pctEnd, txStart, txEnd}
+  let selYearStart = ALL_YEARS[0];
+  let selYearEnd   = ALL_YEARS[ALL_YEARS.length - 1];
+  let changesReady = false;
+  let selFips = null;       // currently selected geography fips
+  let featureNameCache = {};
+  let arrowRAF = null;
+
+  // ============================================================================
+  // GEOGRAPHY LABELS
+  // ============================================================================
+  const STATE_NAMES = {
+    "01":"Alabama","02":"Alaska","04":"Arizona","05":"Arkansas","06":"California",
+    "08":"Colorado","09":"Connecticut","10":"Delaware","11":"District of Columbia",
+    "12":"Florida","13":"Georgia","15":"Hawaii","16":"Idaho","17":"Illinois",
+    "18":"Indiana","19":"Iowa","20":"Kansas","21":"Kentucky","22":"Louisiana",
+    "23":"Maine","24":"Maryland","25":"Massachusetts","26":"Michigan","27":"Minnesota",
+    "28":"Mississippi","29":"Missouri","30":"Montana","31":"Nebraska","32":"Nevada",
+    "33":"New Hampshire","34":"New Jersey","35":"New Mexico","36":"New York",
+    "37":"North Carolina","38":"North Dakota","39":"Ohio","40":"Oklahoma",
+    "41":"Oregon","42":"Pennsylvania","44":"Rhode Island","45":"South Carolina",
+    "46":"South Dakota","47":"Tennessee","48":"Texas","49":"Utah","50":"Vermont",
+    "51":"Virginia","53":"Washington","54":"West Virginia","55":"Wisconsin","56":"Wyoming",
+    "72":"Puerto Rico"
+  };
+  const STATE_ABBR = {
+    "01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT","10":"DE",
+    "11":"DC","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL","18":"IN","19":"IA",
+    "20":"KS","21":"KY","22":"LA","23":"ME","24":"MD","25":"MA","26":"MI","27":"MN",
+    "28":"MS","29":"MO","30":"MT","31":"NE","32":"NV","33":"NH","34":"NJ","35":"NM",
+    "36":"NY","37":"NC","38":"ND","39":"OH","40":"OK","41":"OR","42":"PA","44":"RI",
+    "45":"SC","46":"SD","47":"TN","48":"TX","49":"UT","50":"VT","51":"VA","53":"WA",
+    "54":"WV","55":"WI","56":"WY","72":"PR"
+  };
+
+  function stateLabel(fips2) { return STATE_NAMES[fips2] || fips2; }
+  function stateAbbr(fips2)  { return STATE_ABBR[fips2]  || ""; }
+
+  function countyLabel(fips5) {
+    if (featureNameCache[fips5]) return featureNameCache[fips5];
+    return `County ${fips5}`;
+  }
+
+  function tractLabel(fips11) {
+    const raw = fips11.slice(5);
+    const n   = parseInt(raw.slice(0, 4), 10) + "." + raw.slice(4);
+    return "Tract " + n.replace(/\.00$/, "");
+  }
+
+  function cacheFeatureName(fips, feature) {
+    if (featureNameCache[fips]) return;
+    const p = feature.properties || {};
+    const name = p.NAME || p.name || p.NAMELSAD || p.namelsad;
+    if (name) featureNameCache[fips] = name;
+  }
+
+  // ============================================================================
+  // DATA LOADING
+  // ============================================================================
+  async function loadJSON(url) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    } catch (e) { return null; }
+  }
+
+  async function ensureData(kind, year) {
+    const key = `${kind}_${year}`;
+    if (!dataCache[key]) {
+      const d = await loadJSON(`../data/${key}.json`);
+      dataCache[key] = d || {};
+    }
+    return dataCache[key];
+  }
+
+  async function ensureTractData(year) {
+    const ep = epochFor(year);
+    return ensureData(`tracts_${ep}`, year);
+  }
+
+  // ============================================================================
+  // PERCENTILE COMPUTATION
+  // ============================================================================
+  function getPercentile(income, cdfYear) {
+    if (!income || income <= 0 || !cdfYear) return null;
+    // Binary search: find largest index where cdfYear[idx] <= income
+    let lo = 0, hi = cdfYear.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (cdfYear[mid] <= income) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo / 10; // 0-100 percentile (1001 elements → step 0.1)
+  }
+
+  function ordinal(n) {
+    const r = Math.round(n);
+    const s = ["th","st","nd","rd"];
+    const v = r % 100;
+    return r + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  // ============================================================================
+  // COMPUTE CHANGES
+  // ============================================================================
+  async function computeChanges(yearStart, yearEnd) {
+    const z = map ? map.getZoom() : 4;
+    const isTracts  = z >= ZOOM_TRACT;
+    const isCounty  = z >= ZOOM_COUNTY && !isTracts;
+
+    let dStart, dEnd;
+    if (isTracts) {
+      [dStart, dEnd] = await Promise.all([ensureTractData(yearStart), ensureTractData(yearEnd)]);
+    } else if (isCounty) {
+      [dStart, dEnd] = await Promise.all([ensureData("counties", yearStart), ensureData("counties", yearEnd)]);
+    } else {
+      [dStart, dEnd] = await Promise.all([ensureData("states", yearStart), ensureData("states", yearEnd)]);
+    }
+
+    const qStart = cdf[String(yearStart)];
+    const qEnd   = cdf[String(yearEnd)];
+
+    changes = {};
+    const allFips = new Set([...Object.keys(dStart), ...Object.keys(dEnd)]);
+    allFips.forEach(fips => {
+      const s = dStart[fips];
+      const e = dEnd[fips];
+      if (!s && !e) return;
+      const incS = s?.inc || 0;
+      const incE = e?.inc || 0;
+      const pS   = incS > 0 ? getPercentile(incS, qStart) : null;
+      const pE   = incE > 0 ? getPercentile(incE, qEnd)   : null;
+      if (pS === null && pE === null) return;
+      const delta = (pE !== null && pS !== null) ? (pE - pS) : null;
+      changes[fips] = {
+        pctStart: pS, pctEnd: pE, delta,
+        incStart: incS, incEnd: incE,
+        txStart: s?.tx || 0, txEnd: e?.tx || 0
+      };
+    });
+    changesReady = true;
+    scheduleArrows();
+  }
+
+  // ============================================================================
+  // CANVAS ARROW OVERLAY
+  // ============================================================================
+  function scheduleArrows() {
+    if (arrowRAF) cancelAnimationFrame(arrowRAF);
+    arrowRAF = requestAnimationFrame(drawArrows);
+  }
+
+  function polygonCentroid(geometry) {
+    let ring;
+    if (geometry.type === "MultiPolygon") {
+      // Pick the largest exterior ring
+      let best = geometry.coordinates[0][0];
+      geometry.coordinates.forEach(poly => {
+        if (poly[0].length > best.length) best = poly[0];
+      });
+      ring = best;
+    } else {
+      ring = geometry.coordinates[0];
+    }
+    let sx = 0, sy = 0;
+    for (const [x, y] of ring) { sx += x; sy += y; }
+    return [sx / ring.length, sy / ring.length];
+  }
+
+  function arrowColor(delta, abs) {
+    if (delta === null) return null;
+    if (abs <= 3) return [70, 70, 70];
+    if (delta > 0) {
+      const t = Math.min(1, abs / 40);
+      return [Math.round(20 + (1 - t) * 100), Math.round(120 + t * 70), Math.round(30 + (1 - t) * 60)];
+    } else {
+      const t = Math.min(1, abs / 40);
+      return [Math.round(190 + t * 55), Math.round(55 - t * 40), 25];
+    }
+  }
+
+  function drawOneArrow(ctx, x, y, delta, tx) {
+    // delta: percentile point change; tx: transaction count for sizing
+    const abs  = Math.abs(delta);
+    const norm = Math.max(-1, Math.min(1, delta / 40));
+    // Canvas rotation: 0=right(3 o'clock), -π/2=up(12), +π/2=down(6)
+    const canvasAngle = -norm * Math.PI / 2;
+    const size = Math.max(7, Math.min(15, 5 + Math.log10(Math.max(1, tx)) * 2.8));
+    const rgb  = arrowColor(delta, abs);
+    if (!rgb) return;
+
+    const alpha = 0.72 + 0.22 * Math.min(1, abs / 35);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(canvasAngle);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+    ctx.fillStyle   = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+    ctx.lineWidth   = Math.max(1, size * 0.14);
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+    // Arrow pointing right (canvas default)
+    const hw = size * 0.38;  // arrowhead half-width
+    const hl = size * 0.44;  // arrowhead length
+    const tail = -size * 0.5;
+    const head =  size * 0.5;
+
+    // Shaft
+    ctx.beginPath();
+    ctx.moveTo(tail, 0);
+    ctx.lineTo(head - hl, 0);
+    ctx.stroke();
+    // Head
+    ctx.beginPath();
+    ctx.moveTo(head, 0);
+    ctx.lineTo(head - hl,  hw);
+    ctx.lineTo(head - hl, -hw);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawArrows() {
+    arrowRAF = null;
+    const canvas = document.getElementById("arrow-canvas");
+    if (!canvas || !map || !changesReady) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const z = map.getZoom();
+    let layer, padLen;
+    if (z < ZOOM_COUNTY) {
+      layer  = "states-src-fill";
+      padLen = 2;
+    } else if (z < ZOOM_TRACT) {
+      layer  = "counties-src-fill";
+      padLen = 5;
+    } else {
+      // Tract level — use whichever epoch layer is visible
+      const ep = epochFor(selYearEnd);
+      layer  = `tracts-${ep}-src-fill`;
+      padLen = 11;
+    }
+
+    const feats = map.queryRenderedFeatures({ layers: [layer] });
+    const seen  = new Set();
+
+    for (const f of feats) {
+      const fips = String(f.id ?? "").padStart(padLen, "0");
+      if (!fips || fips === "0".repeat(padLen) || seen.has(fips)) continue;
+      seen.add(fips);
+      cacheFeatureName(fips, f);
+
+      const info = changes[fips];
+      if (!info || info.delta === null) continue;
+
+      try {
+        const [lng, lat] = polygonCentroid(f.geometry);
+        const pt = map.project([lng, lat]);
+        if (pt.x < -20 || pt.x > canvas.width + 20 ||
+            pt.y < -20 || pt.y > canvas.height + 20) continue;
+        drawOneArrow(ctx, pt.x, pt.y, info.delta, info.txStart + info.txEnd);
+      } catch (_) {}
+    }
+  }
+
+  // ============================================================================
+  // LEGEND COLOR BAR
+  // ============================================================================
+  function buildLegendBar() {
+    const bar = document.getElementById("legend-bar");
+    if (!bar) return;
+    const steps = 40;
+    bar.innerHTML = Array.from({length: steps}, (_, i) => {
+      const t = i / (steps - 1);   // 0=fall, 1=rise
+      const delta = (t * 2 - 1) * 40;
+      const abs   = Math.abs(delta);
+      const rgb   = arrowColor(delta, abs);
+      if (!rgb) return "";
+      return `<div style="flex:1;background:rgb(${rgb[0]},${rgb[1]},${rgb[2]})" title="${delta>0?"+":""}${delta.toFixed(0)} pct pts"></div>`;
+    }).join("");
+
+    // Arrow direction glyphs
+    document.getElementById("leg-arrow-up").style.color    = "rgb(20,180,60)";
+    document.getElementById("leg-arrow-flat").style.color  = "rgb(70,70,70)";
+    document.getElementById("leg-arrow-dn").style.color    = "rgb(220,40,25)";
+  }
+
+  // ============================================================================
+  // TOOLTIP
+  // ============================================================================
+  function tooltipFor(fips) {
+    const info = changes[fips];
+    const ttEl = document.getElementById("tt");
+    if (!ttEl) return;
+
+    let name = "";
+    const len = fips.length;
+    if      (len === 2)  name = stateLabel(fips);
+    else if (len === 5)  name = `${countyLabel(fips)}, ${stateAbbr(fips.slice(0,2))}`;
+    else if (len === 11) name = `${tractLabel(fips)}, ${stateAbbr(fips.slice(0,2))}`;
+
+    if (!info || info.delta === null) {
+      ttEl.innerHTML = `<div class="tt-title">${name}</div><div class="tt-no-data">No data for this period</div>`;
+      return;
+    }
+
+    const { pctStart, pctEnd, delta, incStart, incEnd } = info;
+    const fmtInc = n => n ? "$" + n.toLocaleString() : "—";
+    const fmtPct = p => p !== null ? ordinal(Math.round(p)) + " pctl" : "—";
+
+    const abs   = Math.abs(delta);
+    const norm  = Math.max(-1, Math.min(1, delta / 40));
+    // Arrow character — approximate with unicode
+    const arrowChar = delta > 3 ? "↑" : delta < -3 ? "↓" : "→";
+    const rgb = arrowColor(delta, abs);
+    const colorStr = rgb ? `rgb(${rgb[0]},${rgb[1]},${rgb[2]})` : "#888";
+
+    const sign = delta > 0 ? "+" : "";
+    ttEl.innerHTML = `
+      <div class="tt-title">${name}</div>
+      <div class="tt-pct-row">
+        <span class="tt-pct-label">${selYearStart}</span>
+        <span class="tt-pct-val">${fmtPct(pctStart)} &nbsp;<span style="color:#888;font-weight:400">${fmtInc(incStart)}</span></span>
+      </div>
+      <div class="tt-pct-row">
+        <span class="tt-pct-label">${selYearEnd}</span>
+        <span class="tt-pct-val">${fmtPct(pctEnd)} &nbsp;<span style="color:#888;font-weight:400">${fmtInc(incEnd)}</span></span>
+      </div>
+      <div class="tt-delta" style="color:${colorStr}">
+        <span class="tt-arrow-preview">${arrowChar}</span>
+        <span class="tt-delta-val">${sign}${delta.toFixed(1)} percentile pts</span>
+      </div>
+      <div class="tt-footer">Percentile = rank among all U.S. tracts by median homebuyer income</div>
+    `;
+  }
+
+  // ============================================================================
+  // BREADCRUMB
+  // ============================================================================
+  function setBreadcrumb(parts) {
+    const el = document.getElementById("breadcrumb");
+    if (el) el.textContent = parts.filter(Boolean).join(" › ");
+  }
+
+  // ============================================================================
+  // YEAR SLIDER LOGIC
+  // ============================================================================
+  let reloadTimer = null;
+  function onYearChange() {
+    const startIdx = parseInt(document.getElementById("yr-start-input").value);
+    const endIdx   = parseInt(document.getElementById("yr-end-input").value);
+
+    // Enforce start ≤ end (snap)
+    let s = Math.min(startIdx, endIdx);
+    let e = Math.max(startIdx, endIdx);
+    if (s === e) { // force at least 1-year gap
+      e = Math.min(e + 1, ALL_YEARS.length - 1);
+      s = Math.max(s - 1, 0);
+    }
+
+    selYearStart = ALL_YEARS[s];
+    selYearEnd   = ALL_YEARS[e];
+    document.getElementById("yr-start-input").value = s;
+    document.getElementById("yr-end-input").value   = e;
+    document.getElementById("yr-start-lbl").textContent = selYearStart;
+    document.getElementById("yr-end-lbl").textContent   = selYearEnd;
+
+    changesReady = false;
+    // Debounce to avoid loading on every tick
+    clearTimeout(reloadTimer);
+    const loading = document.getElementById("yr-loading");
+    if (loading) loading.classList.add("show");
+    reloadTimer = setTimeout(async () => {
+      await computeChanges(selYearStart, selYearEnd);
+      if (loading) loading.classList.remove("show");
+      pushHash();
+    }, 350);
+  }
+
+  // ============================================================================
+  // ZOOM / LAYER VISIBILITY
+  // ============================================================================
+  function setVis(id, visible) {
+    if (map.getLayer(id))
+      map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+  }
+
+  function handleZoom() {
+    const z = map.getZoom();
+    const inState  = z < ZOOM_COUNTY;
+    const inCounty = z >= ZOOM_COUNTY && z < ZOOM_TRACT;
+    const inTract  = z >= ZOOM_TRACT;
+
+    setVis("states-src-fill",    inState);
+    setVis("states-src-outline", true);
+    setVis("counties-src-fill",    inCounty || inTract);
+    setVis("counties-src-outline", inCounty || inTract);
+
+    // Tract layers
+    ["2000","2010","2020"].forEach(ep => {
+      const active = inTract && ep === String(epochFor(selYearEnd));
+      setVis(`tracts-${ep}-src-fill`,    active);
+      setVis(`tracts-${ep}-src-outline`, active);
+    });
+
+    const tipEl = document.getElementById("map-tip");
+    if (tipEl) tipEl.textContent = inState ? "State view" : inCounty ? "County view" : "Tract view";
+
+    // Recompute if switching zoom level
+    if (changesReady) {
+      computeChanges(selYearStart, selYearEnd);
+    }
+  }
+
+  // ============================================================================
+  // SHAREABLE URL HASH
+  // ============================================================================
+  function buildHash() {
+    if (!map) return "";
+    const c   = map.getCenter();
+    const z   = Math.round(map.getZoom() * 10) / 10;
+    const lat = Math.round(c.lat * 10000) / 10000;
+    const lng = Math.round(c.lng * 10000) / 10000;
+    let hash  = `#${z}/${lat}/${lng}/${selYearStart}/${selYearEnd}`;
+    if (selFips) hash += `/${selFips}`;
+    return hash;
+  }
+
+  function pushHash() {
+    const h = buildHash();
+    if (h) history.replaceState(null, "", h);
+  }
+
+  function parseHash() {
+    const h = location.hash.replace("#", "");
+    if (!h) return null;
+    const p = h.split("/");
+    if (p.length < 5) return null;
+    const z   = parseFloat(p[0]), lat = parseFloat(p[1]);
+    const lng = parseFloat(p[2]);
+    const ys  = parseInt(p[3]), ye = parseInt(p[4]);
+    if ([z,lat,lng,ys,ye].some(isNaN)) return null;
+    return { zoom: z, lat, lng, yearStart: ys, yearEnd: ye, fips: p[5] || null };
+  }
+
+  // ============================================================================
+  // SEARCH (Nominatim)
+  // ============================================================================
+  function initSearch() {
+    const input   = document.getElementById("search-input");
+    const results = document.getElementById("search-results");
+    const clear   = document.getElementById("search-clear");
+    let debounce  = null, lastQuery = "";
+
+    function hideResults() { results.classList.remove("open"); results.innerHTML = ""; }
+    function showMsg(msg)  { results.innerHTML = `<div class="sr-msg">${msg}</div>`; results.classList.add("open"); }
+
+    async function doSearch(q) {
+      if (!q || q.length < 2) { hideResults(); return; }
+      showMsg("Searching…");
+      try {
+        const url = `https://nominatim.openstreetmap.org/search` +
+          `?q=${encodeURIComponent(q)}&countrycodes=us&format=json&limit=6&addressdetails=1`;
+        const res = await fetch(url, { headers: { "Accept-Language": "en-US,en" } });
+        if (!res.ok) throw new Error();
+        const items = (await res.json()).filter(it => it.boundingbox);
+        if (!items.length) { showMsg("No results found"); return; }
+
+        results.innerHTML = items.map((it, i) => {
+          const parts = it.display_name.split(",").map(s => s.trim());
+          return `<div class="sr-item" data-idx="${i}">
+            <div class="sr-item-main">${parts[0]}</div>
+            <div class="sr-item-sub">${parts.slice(1, 3).join(", ")}</div>
+          </div>`;
+        }).join("");
+        results.classList.add("open");
+
+        results.querySelectorAll(".sr-item").forEach(el => {
+          el.addEventListener("click", () => {
+            const it = items[+el.dataset.idx];
+            const [s, n, w, e] = it.boundingbox.map(parseFloat);
+            const center = [(w + e) / 2, (s + n) / 2];
+            map.fitBounds([[w, s], [e, n]], { padding: 40, maxZoom: 11, duration: 900 });
+            input.value = it.display_name.split(",")[0].trim();
+            clear.style.display = "block";
+            hideResults();
+            map.once("idle", () => {
+              const px = map.project(center);
+              const feats = map.queryRenderedFeatures([px.x, px.y], { layers: ["counties-src-fill"] });
+              if (feats.length) {
+                const fips = String(feats[0].id ?? "").padStart(5, "0");
+                selFips = fips;
+                cacheFeatureName(fips, feats[0]);
+                setBreadcrumb([stateLabel(fips.slice(0,2)), countyLabel(fips)]);
+                pushHash();
+              }
+            });
+          });
+        });
+      } catch (_) { showMsg("Search unavailable"); }
+    }
+
+    input.addEventListener("input", e => {
+      const q = e.target.value.trim();
+      clear.style.display = q ? "block" : "none";
+      if (q === lastQuery) return;
+      lastQuery = q;
+      clearTimeout(debounce);
+      if (!q) { hideResults(); return; }
+      debounce = setTimeout(() => doSearch(q), 400);
+    });
+    input.addEventListener("keydown", e => {
+      if (e.key === "Escape") { hideResults(); input.blur(); }
+      if (e.key === "Enter" && lastQuery) doSearch(lastQuery);
+    });
+    input.addEventListener("focus", () => {
+      if (results.innerHTML && input.value) results.classList.add("open");
+    });
+    clear.addEventListener("click", () => {
+      input.value = ""; lastQuery = ""; clear.style.display = "none";
+      hideResults(); input.focus();
+    });
+    document.addEventListener("click", e => {
+      if (!e.target.closest("#search-wrap")) hideResults();
+    });
+  }
+
+  // ============================================================================
+  // MAP INITIALIZATION
+  // ============================================================================
+  async function initialize() {
+    // PMTiles protocol
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile.bind(protocol));
+
+    // Load CDF first (small, needed for all percentile computations)
+    cdf = await loadJSON("../data/income_cdf.json");
+
+    // Parse hash for initial state
+    const hash = parseHash();
+    if (hash) {
+      if (ALL_YEARS.includes(hash.yearStart)) selYearStart = hash.yearStart;
+      if (ALL_YEARS.includes(hash.yearEnd))   selYearEnd   = hash.yearEnd;
+    }
+    // Sync sliders
+    document.getElementById("yr-start-input").value = ALL_YEARS.indexOf(selYearStart);
+    document.getElementById("yr-end-input").value   = ALL_YEARS.indexOf(selYearEnd);
+    document.getElementById("yr-start-lbl").textContent = selYearStart;
+    document.getElementById("yr-end-lbl").textContent   = selYearEnd;
+
+    // Create map
+    map = new maplibregl.Map({
+      container: "map-container",
+      style: {
+        version: 8,
+        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+        sources: {
+          "carto-light": {
+            type: "raster",
+            tiles: [
+              "https://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
+              "https://b.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
+              "https://c.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
+            ],
+            tileSize: 256,
+            attribution: "© OpenStreetMap contributors © CARTO"
+          },
+          "carto-labels": {
+            type: "raster",
+            tiles: [
+              "https://a.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
+              "https://b.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
+              "https://c.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png"
+            ],
+            tileSize: 256
+          }
+        },
+        layers: [{ id: "background", type: "raster", source: "carto-light" }]
+      },
+      center: hash ? [hash.lng, hash.lat] : [-96.5, 38.5],
+      zoom:   hash ? hash.zoom : 4,
+      minZoom: 2, maxZoom: 16,
+      preserveDrawingBuffer: true
+    });
+
+    map.doubleClickZoom.disable();
+
+    await new Promise(resolve => {
+      if (map.loaded()) resolve();
+      else map.on("load", resolve);
+    });
+
+    // Add sources
+    const tileBase = new URL(".", window.location.href).href;
+    const srcDefs = [
+      { id: "states-src",      tiles: `${TILE_BASE}/states.pmtiles` },
+      { id: "counties-src",    tiles: `${TILE_BASE}/counties.pmtiles` },
+      { id: "tracts-2000-src", tiles: `${TILE_BASE}/tracts_2000.pmtiles` },
+      { id: "tracts-2010-src", tiles: `${TILE_BASE}/tracts_2010.pmtiles` },
+      { id: "tracts-2020-src", tiles: `${TILE_BASE}/tracts_2020.pmtiles` }
+    ];
+    srcDefs.forEach(src => {
+      map.addSource(src.id, {
+        type: "vector",
+        url: `pmtiles://${new URL(src.tiles, tileBase).href}`,
+        promoteId: "id"
+      });
+    });
+
+    // Add layers — neutral gray fills (arrows carry the data signal)
+    srcDefs.forEach(src => {
+      const sl       = src.id.startsWith("tracts-") ? "tracts" : src.id.replace("-src", "");
+      const isTracts = src.id.startsWith("tracts-");
+      const isSt     = src.id === "states-src";
+
+      // Fill — light gray
+      map.addLayer({
+        id: `${src.id}-fill`,
+        type: "fill", source: src.id, "source-layer": sl,
+        paint: { "fill-color": "#e8ecef", "fill-opacity": isTracts ? 0.6 : 0.5 },
+        layout: { visibility: isSt ? "none" : "visible" }
+      });
+      // Outline
+      map.addLayer({
+        id: `${src.id}-outline`,
+        type: "line", source: src.id, "source-layer": sl,
+        paint: {
+          "line-color": isSt ? "#aaa" : isTracts ? "#ccc" : "#bbb",
+          "line-width": isSt ? 1.5 : isTracts ? 0.25 : 0.5
+        },
+        layout: { visibility: isSt ? "none" : "visible" }
+      });
+
+      // Hover tooltip
+      let hoverFips = null;
+      map.on("mousemove", `${src.id}-fill`, e => {
+        if (!e.features?.length) return;
+        const padLen = isSt ? 2 : isTracts ? 11 : 5;
+        const fips = String(e.features[0].id ?? "").padStart(padLen, "0");
+        if (!fips || fips === "0".repeat(padLen)) return;
+        cacheFeatureName(fips, e.features[0]);
+        hoverFips = fips;
+        tooltipFor(fips);
+        const ttEl = document.getElementById("tt");
+        if (ttEl) {
+          ttEl.style.left = (e.originalEvent.clientX + 14) + "px";
+          ttEl.style.top  = (e.originalEvent.clientY - 28) + "px";
+          ttEl.classList.add("active");
+        }
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", `${src.id}-fill`, () => {
+        hoverFips = null;
+        const ttEl = document.getElementById("tt");
+        if (ttEl) ttEl.classList.remove("active");
+        map.getCanvas().style.cursor = "";
+      });
+
+      // Click to select
+      map.on("click", `${src.id}-fill`, e => {
+        if (!e.features?.length) return;
+        const padLen = isSt ? 2 : isTracts ? 11 : 5;
+        const fips = String(e.features[0].id ?? "").padStart(padLen, "0");
+        if (!fips || fips === "0".repeat(padLen)) return;
+        cacheFeatureName(fips, e.features[0]);
+        selFips = fips;
+        if (isSt)     setBreadcrumb([stateLabel(fips)]);
+        else if (!isTracts) setBreadcrumb([stateLabel(fips.slice(0,2)), countyLabel(fips)]);
+        else setBreadcrumb([stateLabel(fips.slice(0,2)), tractLabel(fips)]);
+        pushHash();
+      });
+    });
+
+    // Label layer on top
+    map.addLayer({ id: "carto-labels-layer", type: "raster", source: "carto-labels" });
+
+    // Arrow canvas
+    const mapEl     = document.getElementById("map-container");
+    const arrowCanvas = document.getElementById("arrow-canvas");
+    function resizeCanvas() {
+      arrowCanvas.width  = mapEl.clientWidth;
+      arrowCanvas.height = mapEl.clientHeight;
+      scheduleArrows();
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    // Redraw arrows on map movement
+    map.on("render",  scheduleArrows);
+    map.on("moveend", () => { pushHash(); scheduleArrows(); });
+    map.on("zoomend", () => { handleZoom(); computeChanges(selYearStart, selYearEnd); pushHash(); });
+
+    // Initial layer visibility
+    handleZoom();
+
+    // Initial data load
+    await computeChanges(selYearStart, selYearEnd);
+
+    // Restore selected fips from hash
+    if (hash?.fips) {
+      selFips = hash.fips;
+      const len = selFips.length;
+      if      (len === 2)  setBreadcrumb([stateLabel(selFips)]);
+      else if (len === 5)  setBreadcrumb([stateLabel(selFips.slice(0,2)), countyLabel(selFips)]);
+      else if (len === 11) setBreadcrumb([stateLabel(selFips.slice(0,2)), tractLabel(selFips)]);
+    }
+
+    // Zoom controls
+    document.getElementById("zoom-in").addEventListener("click",    () => map.zoomIn());
+    document.getElementById("zoom-out").addEventListener("click",   () => map.zoomOut());
+    document.getElementById("zoom-in-2").addEventListener("click",  () => map.zoomIn());
+    document.getElementById("zoom-out-2").addEventListener("click", () => map.zoomOut());
+    document.getElementById("reset-view").addEventListener("click", () => {
+      map.flyTo({ center: [-96.5, 38.5], zoom: 4 });
+      selFips = null;
+      setBreadcrumb([]);
+      pushHash();
+    });
+
+    // Year sliders
+    document.getElementById("yr-start-input").addEventListener("input", onYearChange);
+    document.getElementById("yr-end-input").addEventListener("input",   onYearChange);
+
+    // Share button
+    document.getElementById("share-btn").addEventListener("click", () => {
+      const url = location.origin + location.pathname + buildHash();
+      const btn = document.getElementById("share-btn");
+      navigator.clipboard.writeText(url).then(() => {
+        btn.textContent = "✓ Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = "🔗 Share"; btn.classList.remove("copied"); }, 2000);
+      }).catch(() => prompt("Copy this shareable link:", url));
+    });
+
+    // Search
+    initSearch();
+
+    // Build legend color bar
+    buildLegendBar();
+  }
+
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", initialize);
+  else
+    initialize();
+  </script>
+</body>
+</html>
